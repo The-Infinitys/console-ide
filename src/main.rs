@@ -5,9 +5,9 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 // Updated import path
-use inf_edit::app::App;
-use inf_edit::event_handler;
-use inf_edit::ui;
+use console_ide::app::App;
+use console_ide::event_handler;
+use console_ide::ui;
 use ratatui::{backend::CrosstermBackend, Terminal};
 use std::io;
 use std::time::Duration;

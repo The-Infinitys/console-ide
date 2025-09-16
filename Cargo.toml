@@ -1,12 +1,12 @@
 [package]
-name = "inf-edit" # アプリケーション名
+name = "console-ide" # アプリケーション名
 version = "1.4.1"
-edition = "2021"
+edition = "2024"
 description = "A command-line tool for editing files." # アプリケーションの簡単な説明
 license = "MIT" # またはお使いのライセンス（例: "GPL-3.0-or-later"）
-authors = ["Your Name <your.email@example.com>"] # あなたの名前とメールアドレスに置き換えてください
-repository = "https://github.com/your-org/inf-edit" # GitHubリポジトリのURLに置き換えてください
-homepage = "https://github.com/your-org/inf-edit" # プロジェクトのホームページURLに置き換えてください
+authors = ["The Infinity's"] # あなたの名前とメールアドレスに置き換えてください
+repository = "https://github.com/The-Infinitys/console-ide" # GitHubリポジトリのURLに置き換えてください
+homepage = "https://github.com/The-Infinitys/console-ide" # プロジェクトのホームページURLに置き換えてください
 
 [dependencies]
 anyhow = "1.0.98"
@@ -24,21 +24,3 @@ toml = "0.8.23"
 tui-term = "*"
 unicode-segmentation = "1.12.0"
 walkdir = "2.5.0"
-
-# --- cargo-deb (DEBパッケージ) のためのメタデータ ---
-[package.metadata.deb]
-maintainer = "The Infinity's <the.infinity.s.infinity@gmail.com>" # パッケージのメンテナー情報
-copyright = "2025 The Infinity's" # 著作権情報（例: 年号と名前）
-depends = "libc6" # 依存する基本的なシステムライブラリ（多くの場合必要）
-license-file = [ "LICENSE", "4" ]
-section = "utility" # パッケージのカテゴリ（例: "utility", "devel", "text" など）
-priority = "optional" # パッケージの重要度
-assets = [
-    # 各ターゲットアーキテクチャのバイナリを /usr/bin/inf-edit に配置
-    # パスはGitHub Actionsでビルドされる実際のバイナリパスに合わせてください
-    ["target/release/inf-edit", "/usr/bin/", "755"],
-    { source = "README.md", dest = "usr/share/doc/inf-edit/README", mode = "644"},
-    # 必要に応じて、マニュアルページや設定ファイルなどを追加
-]
-# より高度な設定（例: debian/control ファイルの指定、インストール/アンインストールスクリプト）は
-# ドキュメントを参照してください: https://docs.rs/cargo-deb/latest/cargo_deb/#configuration
