@@ -1,4 +1,4 @@
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Deserializer, Serializer};
 use ratatui::style::Color;
 
 // Helper function to serialize Color to a string (HEX or named)
