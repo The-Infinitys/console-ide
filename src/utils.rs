@@ -1,2 +1,4 @@
-pub mod args;
-pub mod error;
+mod args;
+mod error;
+pub use args::Args;
+pub use error::Error;
