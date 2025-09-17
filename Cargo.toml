@@ -1,26 +1,6 @@
 [package]
-name = "console-ide" # アプリケーション名
-version = "1.4.1"
+name = "console-ide"
+version = "0.1.0"
 edition = "2024"
-description = "A command-line tool for editing files." # アプリケーションの簡単な説明
-license = "MIT" # またはお使いのライセンス（例: "GPL-3.0-or-later"）
-authors = ["The Infinity's"] # あなたの名前とメールアドレスに置き換えてください
-repository = "https://github.com/The-Infinitys/console-ide" # GitHubリポジトリのURLに置き換えてください
-homepage = "https://github.com/The-Infinitys/console-ide" # プロジェクトのホームページURLに置き換えてください
 
 [dependencies]
-anyhow = "1.0.98"
-chrono = "0.4.41"
-colored = "3.0.0"
-crossterm = "0.29.0"
-git2 = "0.20.2"
-directories-next = "2.0.0"
-once_cell = "1.21.3"
-portable-pty = "0.9.0"
-ratatui = "0.29.0"
-notify = "6.1.1"
-serde = { version = "1.0.219", features = ["derive"] }
-toml = "0.8.23"
-tui-term = "*"
-unicode-segmentation = "1.12.0"
-walkdir = "2.5.0"
