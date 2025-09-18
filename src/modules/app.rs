@@ -4,7 +4,7 @@ use crossterm::{
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
 use event::{Event, EventHandler};
-use features::{BuildinFeature, Feature, FeatureManager};
+use features::FeatureManager;
 use ratatui::{
     Frame, Terminal,
     backend::CrosstermBackend,
@@ -48,55 +48,7 @@ impl App {
             Config::default()
         });
 
-        let mut feature_manager = FeatureManager::new();
-        feature_manager.register_feature(Feature::Buildin(BuildinFeature::new(
-            "editor",
-            "Editor",
-            "Console IDE Team",
-            "Text editor for code editing",
-        )));
-        feature_manager.register_feature(Feature::Buildin(BuildinFeature::new(
-            "terminal",
-            "Terminal",
-            "Console IDE Team",
-            "Integrated terminal",
-        )));
-        feature_manager.register_feature(Feature::Buildin(BuildinFeature::new(
-            "git",
-            "Git",
-            "Console IDE Team",
-            "Git version control integration",
-        )));
-        feature_manager.register_feature(Feature::Buildin(BuildinFeature::new(
-            "file_search",
-            "File Search",
-            "Console IDE Team",
-            "Search files in the workspace",
-        )));
-        feature_manager.register_feature(Feature::Buildin(BuildinFeature::new(
-            "workspace_manager",
-            "Workspace Manager",
-            "Console IDE Team",
-            "Manage workspace files and folders",
-        )));
-        feature_manager.register_feature(Feature::Buildin(BuildinFeature::new(
-            "extension_manager",
-            "Extension Manager",
-            "Console IDE Team",
-            "Manage extensions",
-        )));
-        feature_manager.register_feature(Feature::Buildin(BuildinFeature::new(
-            "settings_manager",
-            "Settings Manager",
-            "Console IDE Team",
-            "Manage application settings",
-        )));
-        feature_manager.register_feature(Feature::Buildin(BuildinFeature::new(
-            "debugger",
-            "Debugger",
-            "Console IDE Team",
-            "Code debugger",
-        )));
+        let feature_manager = FeatureManager::new();
 
         Self {
             workspace_dir: None,
