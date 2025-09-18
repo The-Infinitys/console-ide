@@ -80,6 +80,8 @@ impl App {
                             .find(|bind_id| bind_id.starts_with("focus."))
                         {
                             Some(focused_bind.to_string())
+                        } else if let Some(bind_id) = detected_bindings.first() {
+                            Some(bind_id.to_string())
                         } else {
                             None
                         };
