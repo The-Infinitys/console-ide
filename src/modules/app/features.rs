@@ -40,7 +40,7 @@ pub struct FeatureInfo {
 impl Feature {
     pub fn new(id: &str) -> Self {
         let bin_path = PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| "~".to_string()))
-            .join("console-ide")
+            .join(".console-ide")
             .join("features")
             .join(&id);
         Self {
