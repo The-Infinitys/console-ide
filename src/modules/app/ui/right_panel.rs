@@ -6,11 +6,18 @@ use ratatui::{
     widgets::{Block, BorderType, Borders},
 };
 
-pub fn draw_right_panel(f: &mut Frame, area: Rect, theme: &Theme) {
+use crate::modules::app::ui::WidgetItem;
+pub fn draw_right_panel(f: &mut Frame, area: Rect, theme: &Theme, widgets: &[WidgetItem]) {
     let right_panel = Block::default()
         .borders(Borders::LEFT)
         .border_style(theme.primary)
         .border_type(BorderType::QuadrantOutside)
         .style(Style::default().bg(theme.background).fg(theme.foreground));
     f.render_widget(right_panel, area);
+    for widget in widgets {
+        match widget {
+            WidgetItem::Buildin(w) => {/* ... */},
+            WidgetItem::Extension(e) => {/* ... */},
+        }
+    }
 }
