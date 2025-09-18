@@ -4,6 +4,7 @@ use crossterm::{
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
 use event::{Event, EventHandler};
+use features::{BuildinFeature, Feature, FeatureManager};
 use ratatui::{
     Frame, Terminal,
     backend::CrosstermBackend,
@@ -22,6 +23,8 @@ pub struct App {
     workspace_dir: Option<PathBuf>,
     config: Config,
     event_handler: EventHandler,
+    #[allow(unused)]
+    feature_manager: FeatureManager,
 }
 
 impl Default for App {
@@ -30,6 +33,7 @@ impl Default for App {
             workspace_dir: None,
             config: Config::default(),
             event_handler: EventHandler::new(Duration::from_millis(100)),
+            feature_manager: FeatureManager::default(),
         }
     }
 }
@@ -43,10 +47,62 @@ impl App {
             eprintln!("Failed to load main config from {:?}: {}", config_path, e);
             Config::default()
         });
+
+        let mut feature_manager = FeatureManager::new();
+        feature_manager.register_feature(Feature::Buildin(BuildinFeature::new(
+            "editor",
+            "Editor",
+            "Console IDE Team",
+            "Text editor for code editing",
+        )));
+        feature_manager.register_feature(Feature::Buildin(BuildinFeature::new(
+            "terminal",
+            "Terminal",
+            "Console IDE Team",
+            "Integrated terminal",
+        )));
+        feature_manager.register_feature(Feature::Buildin(BuildinFeature::new(
+            "git",
+            "Git",
+            "Console IDE Team",
+            "Git version control integration",
+        )));
+        feature_manager.register_feature(Feature::Buildin(BuildinFeature::new(
+            "file_search",
+            "File Search",
+            "Console IDE Team",
+            "Search files in the workspace",
+        )));
+        feature_manager.register_feature(Feature::Buildin(BuildinFeature::new(
+            "workspace_manager",
+            "Workspace Manager",
+            "Console IDE Team",
+            "Manage workspace files and folders",
+        )));
+        feature_manager.register_feature(Feature::Buildin(BuildinFeature::new(
+            "extension_manager",
+            "Extension Manager",
+            "Console IDE Team",
+            "Manage extensions",
+        )));
+        feature_manager.register_feature(Feature::Buildin(BuildinFeature::new(
+            "settings_manager",
+            "Settings Manager",
+            "Console IDE Team",
+            "Manage application settings",
+        )));
+        feature_manager.register_feature(Feature::Buildin(BuildinFeature::new(
+            "debugger",
+            "Debugger",
+            "Console IDE Team",
+            "Code debugger",
+        )));
+
         Self {
             workspace_dir: None,
             config,
             event_handler: EventHandler::new(Duration::from_millis(250)),
+            feature_manager,
         }
     }
     pub fn set_workspace(&mut self, path: PathBuf) {
@@ -70,7 +126,7 @@ impl App {
                         let detected_bindings = self.config.keybindings.detect_events(&key);
 
                         // 1. System KeyBindings
-                        
+
                         if let Some(system_bind) = detected_bindings
                             .iter()
                             .find(|bind_id| bind_id.starts_with("system."))
@@ -81,10 +137,15 @@ impl App {
                             .find(|bind_id| bind_id.starts_with("focus."))
                         {
                             Some(focused_bind.to_string())
-                        } else { detected_bindings.first().map(|bind_id| bind_id.to_string()) }
+                        } else {
+                            detected_bindings.first().map(|bind_id| bind_id.to_string())
+                        }
                     };
                     if let Some(bind_id) = bind_id
-                        && bind_id.as_str() == "system.quit" { break }
+                        && bind_id.as_str() == "system.quit"
+                    {
+                        break;
+                    }
                 }
                 Event::Tick => {}
             }

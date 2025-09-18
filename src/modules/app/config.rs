@@ -59,7 +59,7 @@ impl Config {
         Ok(())
     }
     fn get_config_path() -> PathBuf {
-        let home = env::var("HOME").unwrap_or_else(|_| String::from("/"));
+        let home = env::var("HOME").unwrap_or_else(|_| String::from("~"));
         PathBuf::from(home)
             .join(".console-ide")
             .join("config")
@@ -67,7 +67,7 @@ impl Config {
     }
     /// $HOME/.console-ide/config/theme.yaml のパス取得
     fn get_theme_path() -> PathBuf {
-        let home = env::var("HOME").unwrap_or_else(|_| String::from("/"));
+        let home = env::var("HOME").unwrap_or_else(|_| String::from("~"));
         PathBuf::from(home)
             .join(".console-ide")
             .join("config")
@@ -76,7 +76,7 @@ impl Config {
 
     /// $HOME/.console-ide/config/keybindings.yaml のパス取得
     fn get_keybindings_path() -> PathBuf {
-        let home = env::var("HOME").unwrap_or_else(|_| String::from("/"));
+        let home = env::var("HOME").unwrap_or_else(|_| String::from("~"));
         PathBuf::from(home)
             .join(".console-ide")
             .join("config")
