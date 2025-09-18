@@ -16,6 +16,7 @@ use std::{io, path::PathBuf, time::Duration};
 pub mod config;
 pub mod event;
 pub mod ui;
+pub mod features;
 
 pub struct App {
     workspace_dir: Option<PathBuf>,

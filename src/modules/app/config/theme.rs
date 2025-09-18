@@ -82,8 +82,9 @@ impl Theme {
     pub fn load(path: &PathBuf) -> io::Result<Self> {
         if path.exists() {
             let theme_str = fs::read_to_string(path)?;
-            let theme: Self = serde_yaml::from_str(&theme_str)
+            let mut theme: Self = serde_yaml::from_str(&theme_str)
                 .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+            theme._path = Some(path.clone());
             Ok(theme)
         } else {
             Ok(Self::default())
