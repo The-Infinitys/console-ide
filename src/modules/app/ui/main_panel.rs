@@ -9,8 +9,8 @@ pub fn draw_main_panel(f: &mut Frame, area: Rect, theme: &Theme, widgets: &[Widg
     f.render_widget(main_panel, area);
     for widget in widgets {
         match widget {
-            WidgetItem::Buildin(w) => {/* ... */},
-            WidgetItem::Extension(e) => {/* ... */},
+            WidgetItem::Buildin(_w) => {/* ... */},
+            WidgetItem::Extension(_e) => {/* ... */},
         }
     }
 }

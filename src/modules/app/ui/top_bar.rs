@@ -16,8 +16,8 @@ pub fn draw_top_bar(f: &mut Frame, area: Rect, theme: &Theme, widgets: &[WidgetI
     f.render_widget(top_bar, area);
     for widget in widgets {
         match widget {
-            WidgetItem::Buildin(w) => {/* 組み込みウィジェット描画 */},
-            WidgetItem::Extension(e) => {/* 拡張ウィジェット描画 */},
+            WidgetItem::Buildin(_w) => {/* 組み込みウィジェット描画 */},
+            WidgetItem::Extension(_e) => {/* 拡張ウィジェット描画 */},
         }
     }
 }

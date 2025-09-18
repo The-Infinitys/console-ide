@@ -16,8 +16,8 @@ pub fn draw_left_panel(f: &mut Frame, area: Rect, theme: &Theme, widgets: &[Widg
     f.render_widget(left_panel, area);
     for widget in widgets {
         match widget {
-            WidgetItem::Buildin(w) => {/* ... */},
-            WidgetItem::Extension(e) => {/* ... */},
+            WidgetItem::Buildin(_w) => {/* ... */},
+            WidgetItem::Extension(_e) => {/* ... */},
         }
     }
 }

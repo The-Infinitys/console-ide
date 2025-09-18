@@ -16,8 +16,8 @@ pub fn draw_sub_panel(f: &mut Frame, area: Rect, theme: &Theme, widgets: &[Widge
     f.render_widget(sub_panel, area);
     for widget in widgets {
         match widget {
-            WidgetItem::Buildin(w) => {/* ... */},
-            WidgetItem::Extension(e) => {/* ... */},
+            WidgetItem::Buildin(_w) => {/* ... */},
+            WidgetItem::Extension(_e) => {/* ... */},
         }
     }
 }

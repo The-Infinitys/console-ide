@@ -16,8 +16,8 @@ pub fn draw_right_panel(f: &mut Frame, area: Rect, theme: &Theme, widgets: &[Wid
     f.render_widget(right_panel, area);
     for widget in widgets {
         match widget {
-            WidgetItem::Buildin(w) => {/* ... */},
-            WidgetItem::Extension(e) => {/* ... */},
+            WidgetItem::Buildin(_w) => {/* ... */},
+            WidgetItem::Extension(_e) => {/* ... */},
         }
     }
 }
