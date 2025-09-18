@@ -1,5 +1,6 @@
-use std::path::PathBuf;
-
+use ipak::prelude::ipak::{Version, VersionRange};
+use std::str::FromStr;
+use std::{collections::HashMap, path::PathBuf};
 pub struct FeatureManager {
     pub features: Vec<Feature>,
 }
@@ -28,6 +29,7 @@ impl FeatureManager {
 pub struct Feature {
     pub id: String,
     pub info: FeatureInfo,
+    pub relations: FeatureRelationsInfo,
     #[allow(unused)]
     bin_path: PathBuf,
 }
@@ -36,6 +38,12 @@ pub struct FeatureInfo {
     pub summary: String,
     pub description: String,
     pub url: String,
+    pub version: Version,
+}
+pub struct FeatureRelationsInfo {
+    pub host_version: VersionRange,
+    pub depend: HashMap<String, VersionRange>,
+    pub conflict: Vec<String>,
 }
 impl Feature {
     pub fn new(id: &str) -> Self {
@@ -50,6 +58,12 @@ impl Feature {
                 summary: "".into(),
                 description: "".into(),
                 url: "".into(),
+                version: Version::from_str("1.0.0").unwrap(),
+            },
+            relations: FeatureRelationsInfo {
+                host_version: VersionRange::from_str("*").unwrap(),
+                depend: HashMap::new(),
+                conflict: Vec::new(),
             },
             bin_path,
         }
