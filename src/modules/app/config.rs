@@ -5,6 +5,8 @@ use std::{collections::HashMap, fs, io, path::PathBuf};
 use serde::{Deserialize, Serialize};
 
 pub mod theme;
+pub mod keybindings;
+use crate::modules::app::config::keybindings::Keybindings;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum ConfigValue {
@@ -19,6 +21,8 @@ pub struct Config {
     pub values: HashMap<String, ConfigValue>,
     #[serde(skip)]
     pub theme: Theme,
+    #[serde(skip)]
+    pub keybindings: Keybindings,
 }
 
 impl Default for Config {
@@ -26,6 +30,7 @@ impl Default for Config {
         Self {
             values: HashMap::new(),
             theme: Theme::default(),
+            keybindings: Keybindings::default(),
         }
     }
 }
@@ -42,6 +47,9 @@ impl Config {
         // themeの読み込み
         let theme_path = Self::get_theme_path();
         config.theme = Theme::load(&theme_path).unwrap_or_else(|_| Theme::default());
+        // keybindingsの読み込み
+        let keybindings_path = Self::get_keybindings_path();
+        config.keybindings = Keybindings::load(&keybindings_path).unwrap_or_else(|_| Keybindings::default());
         Ok(config)
     }
 
@@ -54,6 +62,8 @@ impl Config {
         fs::write(Self::get_config_path(), config_str)?;
         // themeの保存
         self.theme.save_to_path(&Self::get_theme_path())?;
+        // keybindingsの保存
+        self.keybindings.save_to_path(&Self::get_keybindings_path())?;
         Ok(())
     }
     fn get_config_path() -> PathBuf {
@@ -70,6 +80,15 @@ impl Config {
             .join(".console-ide")
             .join("config")
             .join("theme.yaml")
+    }
+
+    /// $HOME/.console-ide/config/keybindings.yaml のパス取得
+    fn get_keybindings_path() -> PathBuf {
+        let home = env::var("HOME").unwrap_or_else(|_| String::from("/"));
+        PathBuf::from(home)
+            .join(".console-ide")
+            .join("config")
+            .join("keybindings.yaml")
     }
 
     pub fn get(&self, key: &str) -> Option<&ConfigValue> {
