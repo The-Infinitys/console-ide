@@ -1,9 +1,9 @@
-use crate::modules::app::config::Config;
+use config::Config;
 use crossterm::{
-    event::{Event as CEvent, KeyCode},
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
+use event::{Event, EventHandler};
 use ratatui::{
     Frame, Terminal,
     backend::CrosstermBackend,
@@ -15,12 +15,13 @@ use std::{io, path::PathBuf, time::Duration};
 
 pub mod config;
 pub mod event;
-pub mod ui;
 pub mod features;
+pub mod ui;
 
 pub struct App {
     workspace_dir: Option<PathBuf>,
     config: Config,
+    event_handler: EventHandler,
 }
 
 impl Default for App {
@@ -28,6 +29,7 @@ impl Default for App {
         Self {
             workspace_dir: None,
             config: Config::default(),
+            event_handler: EventHandler::new(Duration::from_millis(100)),
         }
     }
 }
@@ -41,10 +43,10 @@ impl App {
             eprintln!("Failed to load main config from {:?}: {}", config_path, e);
             Config::default()
         });
-
         Self {
             workspace_dir: None,
             config,
+            event_handler: EventHandler::new(Duration::from_millis(250)),
         }
     }
     pub fn set_workspace(&mut self, path: PathBuf) {
@@ -62,15 +64,35 @@ impl App {
                 self.render(f);
             })?;
 
-            if crossterm::event::poll(Duration::from_millis(250))? {
-                if let CEvent::Key(key) = crossterm::event::read()? {
-                    match key.code {
-                        KeyCode::Char('q') => {
-                            break;
+            match self.event_handler.next() {
+                Event::Input(key) => {
+                    let bind_id: Option<String> = {
+                        let detected_bindings = self.config.keybindings.detect_events(&key);
+
+                        // 1. System KeyBindings
+                        let bind_id = if let Some(system_bind) = detected_bindings
+                            .iter()
+                            .find(|bind_id| bind_id.starts_with("system."))
+                        {
+                            Some(system_bind.to_string())
+                        } else if let Some(focused_bind) = detected_bindings
+                            .iter()
+                            .find(|bind_id| bind_id.starts_with("focus."))
+                        {
+                            Some(focused_bind.to_string())
+                        } else {
+                            None
+                        };
+                        bind_id
+                    };
+                    if let Some(bind_id) = bind_id {
+                        match bind_id.as_str() {
+                            "system.quit" => break,
+                            _ => {}
                         }
-                        _ => {}
                     }
                 }
+                Event::Tick => {}
             }
         }
 
