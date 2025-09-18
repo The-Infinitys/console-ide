@@ -70,7 +70,8 @@ impl App {
                         let detected_bindings = self.config.keybindings.detect_events(&key);
 
                         // 1. System KeyBindings
-                        let bind_id = if let Some(system_bind) = detected_bindings
+                        
+                        if let Some(system_bind) = detected_bindings
                             .iter()
                             .find(|bind_id| bind_id.starts_with("system."))
                         {
@@ -80,19 +81,10 @@ impl App {
                             .find(|bind_id| bind_id.starts_with("focus."))
                         {
                             Some(focused_bind.to_string())
-                        } else if let Some(bind_id) = detected_bindings.first() {
-                            Some(bind_id.to_string())
-                        } else {
-                            None
-                        };
-                        bind_id
+                        } else { detected_bindings.first().map(|bind_id| bind_id.to_string()) }
                     };
-                    if let Some(bind_id) = bind_id {
-                        match bind_id.as_str() {
-                            "system.quit" => break,
-                            _ => {}
-                        }
-                    }
+                    if let Some(bind_id) = bind_id
+                        && bind_id.as_str() == "system.quit" { break }
                 }
                 Event::Tick => {}
             }

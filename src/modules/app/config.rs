@@ -17,6 +17,7 @@ pub enum ConfigValue {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default)]
 pub struct Config {
     pub values: HashMap<String, ConfigValue>,
     #[serde(skip)]
@@ -25,15 +26,6 @@ pub struct Config {
     pub keybindings: Keybindings,
 }
 
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            values: HashMap::new(),
-            theme: Theme::default(),
-            keybindings: Keybindings::default(),
-        }
-    }
-}
 
 impl Config {
     pub fn load(config_path: &PathBuf) -> io::Result<Self> {
