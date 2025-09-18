@@ -1,9 +1,10 @@
-use super::color::{deserialize_color, serialize_color};
+use color::{deserialize_color, serialize_color};
 use ratatui::style::Color;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io;
 use std::path::PathBuf;
+mod color;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Theme {
     #[serde(skip_serializing, skip_deserializing)]
@@ -89,13 +90,12 @@ impl Theme {
         }
     }
 
-    pub fn save(&self) -> io::Result<()> {
+    pub fn save_to_path(&self, path: &PathBuf) -> io::Result<()> {
         let theme_str = serde_yaml::to_string(self)
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
-        let path = self
-            ._path
-            .clone()
-            .ok_or(io::Error::from(io::ErrorKind::NotFound))?;
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
         fs::write(path, theme_str)?;
         Ok(())
     }
@@ -109,6 +109,8 @@ impl TryFrom<&PathBuf> for Theme {
 }
 impl Drop for Theme {
     fn drop(&mut self) {
-        let _ = self.save();
+        if let Some(ref path) = self._path {
+            let _ = self.save_to_path(path);
+        }
     }
 }

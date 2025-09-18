@@ -1,5 +1,5 @@
-use serde::{Deserialize, Deserializer, Serializer};
 use ratatui::style::Color;
+use serde::{Deserialize, Deserializer, Serializer};
 
 // Helper function to serialize Color to a string (HEX or named)
 pub fn serialize_color<S>(color: &Color, serializer: S) -> Result<S::Ok, S::Error>
@@ -25,7 +25,7 @@ where
         Color::LightMagenta => "LightMagenta".to_string(),
         Color::LightCyan => "LightCyan".to_string(),
         Color::Reset => "Transparent".to_string(), // Map Reset to Transparent
-        _ => "Black".to_string(), // Default to black for unsupported colors
+        _ => "Black".to_string(),                  // Default to black for unsupported colors
     };
     serializer.serialize_str(&color_str)
 }
@@ -64,4 +64,3 @@ where
         }
     }
 }
-

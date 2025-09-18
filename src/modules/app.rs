@@ -1,4 +1,4 @@
-use crate::modules::app::config::{Config, theme::Theme};
+use crate::modules::app::config::Config;
 use crossterm::{
     event::{Event as CEvent, KeyCode},
     execute,
@@ -20,7 +20,6 @@ pub mod ui;
 pub struct App {
     workspace_dir: Option<PathBuf>,
     config: Config,
-    theme: Theme,
 }
 
 impl Default for App {
@@ -28,7 +27,6 @@ impl Default for App {
         Self {
             workspace_dir: None,
             config: Config::default(),
-            theme: Theme::default(),
         }
     }
 }
@@ -43,15 +41,9 @@ impl App {
             Config::default()
         });
 
-        let theme = Theme::load(&config_path.join("theme.yaml")).unwrap_or_else(|e| {
-            eprintln!("Failed to load theme config from {:?}: {}", config_path, e);
-            Theme::default()
-        });
-
         Self {
             workspace_dir: None,
             config,
-            theme,
         }
     }
     pub fn set_workspace(&mut self, path: PathBuf) {
@@ -100,23 +92,23 @@ impl App {
 
         let top_bar = Block::default()
             .borders(Borders::BOTTOM)
-            .border_style(self.theme.primary)
+            .border_style(self.config.theme.primary)
             .border_type(BorderType::QuadrantOutside)
             .style(
                 Style::default()
-                    .bg(self.theme.background)
-                    .fg(self.theme.foreground),
+                    .bg(self.config.theme.background)
+                    .fg(self.config.theme.foreground),
             );
         f.render_widget(top_bar, chunks[0]);
 
         let bottom_bar = Block::default()
             .borders(Borders::TOP)
-            .border_style(self.theme.primary)
+            .border_style(self.config.theme.primary)
             .border_type(BorderType::QuadrantOutside)
             .style(
                 Style::default()
-                    .bg(self.theme.background)
-                    .fg(self.theme.foreground),
+                    .bg(self.config.theme.background)
+                    .fg(self.config.theme.foreground),
             );
         f.render_widget(bottom_bar, chunks[2]);
 
@@ -131,23 +123,23 @@ impl App {
 
         let left_panel = Block::default()
             .borders(Borders::RIGHT)
-            .border_style(self.theme.primary)
+            .border_style(self.config.theme.primary)
             .border_type(BorderType::QuadrantOutside)
             .style(
                 Style::default()
-                    .bg(self.theme.background)
-                    .fg(self.theme.foreground),
+                    .bg(self.config.theme.background)
+                    .fg(self.config.theme.foreground),
             );
         f.render_widget(left_panel, middle_chunks[0]);
 
         let right_panel = Block::default()
             .borders(Borders::LEFT)
-            .border_style(self.theme.primary)
+            .border_style(self.config.theme.primary)
             .border_type(BorderType::QuadrantOutside)
             .style(
                 Style::default()
-                    .bg(self.theme.background)
-                    .fg(self.theme.foreground),
+                    .bg(self.config.theme.background)
+                    .fg(self.config.theme.foreground),
             );
         f.render_widget(right_panel, middle_chunks[2]);
 
@@ -161,19 +153,19 @@ impl App {
 
         let main_panel = Block::default().borders(Borders::NONE).style(
             Style::default()
-                .bg(self.theme.background)
-                .fg(self.theme.foreground),
+                .bg(self.config.theme.background)
+                .fg(self.config.theme.foreground),
         );
         f.render_widget(main_panel, center_chunks[0]);
 
         let sub_panel = Block::default()
             .borders(Borders::TOP)
-            .border_style(self.theme.primary)
+            .border_style(self.config.theme.primary)
             .border_type(BorderType::QuadrantOutside)
             .style(
                 Style::default()
-                    .bg(self.theme.background)
-                    .fg(self.theme.foreground),
+                    .bg(self.config.theme.background)
+                    .fg(self.config.theme.foreground),
             );
         f.render_widget(sub_panel, center_chunks[1]);
     }
