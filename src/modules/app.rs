@@ -5,13 +5,7 @@ use crossterm::{
 };
 use event::{Event, EventHandler};
 use features::FeatureManager;
-use ratatui::{
-    Frame, Terminal,
-    backend::CrosstermBackend,
-    layout::{Constraint, Direction, Layout},
-    style::Style,
-    widgets::{Block, BorderType, Borders},
-};
+use ratatui::{Frame, Terminal, backend::CrosstermBackend};
 use std::{io, path::PathBuf, time::Duration};
 
 pub mod config;
@@ -25,6 +19,7 @@ pub struct App {
     event_handler: EventHandler,
     #[allow(unused)]
     feature_manager: FeatureManager,
+    ui: ui::Ui,
 }
 
 impl Default for App {
@@ -34,6 +29,7 @@ impl Default for App {
             config: Config::default(),
             event_handler: EventHandler::new(Duration::from_millis(100)),
             feature_manager: FeatureManager::default(),
+            ui: ui::Ui::default(),
         }
     }
 }
@@ -55,6 +51,7 @@ impl App {
             config,
             event_handler: EventHandler::new(Duration::from_millis(250)),
             feature_manager,
+            ui: ui::Ui::default(),
         }
     }
     pub fn set_workspace(&mut self, path: PathBuf) {
@@ -111,92 +108,6 @@ impl App {
     }
 
     fn render(&mut self, f: &mut Frame) {
-        let chunks = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([
-                Constraint::Length(2), // Top bar
-                Constraint::Min(0),    // Middle box
-                Constraint::Length(2), // Bottom bar
-            ])
-            .split(f.area());
-
-        let top_bar = Block::default()
-            .borders(Borders::BOTTOM)
-            .border_style(self.config.theme.primary)
-            .border_type(BorderType::QuadrantOutside)
-            .style(
-                Style::default()
-                    .bg(self.config.theme.background)
-                    .fg(self.config.theme.foreground),
-            );
-        f.render_widget(top_bar, chunks[0]);
-
-        let bottom_bar = Block::default()
-            .borders(Borders::TOP)
-            .border_style(self.config.theme.primary)
-            .border_type(BorderType::QuadrantOutside)
-            .style(
-                Style::default()
-                    .bg(self.config.theme.background)
-                    .fg(self.config.theme.foreground),
-            );
-        f.render_widget(bottom_bar, chunks[2]);
-
-        let middle_chunks = Layout::default()
-            .direction(Direction::Horizontal)
-            .constraints([
-                Constraint::Min(1),     // Left panel
-                Constraint::Min(0),     // Center box
-                Constraint::Length(20), // Right panel (placeholder width)
-            ])
-            .split(chunks[1]);
-
-        let left_panel = Block::default()
-            .borders(Borders::RIGHT)
-            .border_style(self.config.theme.primary)
-            .border_type(BorderType::QuadrantOutside)
-            .style(
-                Style::default()
-                    .bg(self.config.theme.background)
-                    .fg(self.config.theme.foreground),
-            );
-        f.render_widget(left_panel, middle_chunks[0]);
-
-        let right_panel = Block::default()
-            .borders(Borders::LEFT)
-            .border_style(self.config.theme.primary)
-            .border_type(BorderType::QuadrantOutside)
-            .style(
-                Style::default()
-                    .bg(self.config.theme.background)
-                    .fg(self.config.theme.foreground),
-            );
-        f.render_widget(right_panel, middle_chunks[2]);
-
-        let center_chunks = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([
-                Constraint::Percentage(70), // Main panel
-                Constraint::Percentage(30), // Sub panel
-            ])
-            .split(middle_chunks[1]);
-
-        let main_panel = Block::default().borders(Borders::NONE).style(
-            Style::default()
-                .bg(self.config.theme.background)
-                .fg(self.config.theme.foreground),
-        );
-        f.render_widget(main_panel, center_chunks[0]);
-
-        let sub_panel = Block::default()
-            .borders(Borders::TOP)
-            .border_style(self.config.theme.primary)
-            .border_type(BorderType::QuadrantOutside)
-            .style(
-                Style::default()
-                    .bg(self.config.theme.background)
-                    .fg(self.config.theme.foreground),
-            );
-        f.render_widget(sub_panel, center_chunks[1]);
+        self.ui.render(f, &self.config);
     }
 }
