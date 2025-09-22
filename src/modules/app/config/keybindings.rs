@@ -31,7 +31,7 @@ impl Default for Keybindings {
             BindSet::new("system.focus.subpanel", "ctrl+j"),
             BindSet::new("system.focus.subpanel.terminal", "ctrl+`"),
             BindSet::new("system.focus.leftpanel", "ctrl+b"),
-            BindSet::new("system.focus.rightpanel", "ctrl+shift+b"),
+            BindSet::new("system.focus.rightpanel", "ctrl+alt+b"),
             BindSet::new("system.focus.pallete", "ctrl+p"),
             BindSet::new("system.focus.pallete.command", "ctrl+shift+p"),
             BindSet::new("focus.mainpanel.new-editor", "ctrl+n"),
@@ -80,11 +80,13 @@ impl Keybindings {
             _ => return Err(()),
         };
         let mut modifiers = Vec::with_capacity(3);
-        if key.modifiers.contains(event::KeyModifiers::ALT) {
-            modifiers.push("alt");
-        }
+
         if key.modifiers.contains(event::KeyModifiers::CONTROL) {
             modifiers.push("ctrl");
+        }
+
+        if key.modifiers.contains(event::KeyModifiers::ALT) {
+            modifiers.push("alt");
         }
         if key.modifiers.contains(event::KeyModifiers::SHIFT) {
             modifiers.push("shift");

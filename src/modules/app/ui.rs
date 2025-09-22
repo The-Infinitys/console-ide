@@ -62,15 +62,6 @@ impl Ui {
                 }
                 self.focused_on = FocusedElement::MainPanel;
             } else {
-                // If the new focus is different, open the new panel and close the old one (if applicable)
-                // First, close the currently focused panel (if it's a panel that can be closed)
-                match self.focused_on {
-                    FocusedElement::LeftPanel => self.panel.left.is_closed = true,
-                    FocusedElement::RightPanel => self.panel.right.is_closed = true,
-                    FocusedElement::SubPanel => self.panel.sub.is_closed = true,
-                    _ => {}
-                }
-
                 // Then, open the new panel (if it's a panel that can be opened)
                 match new_focus {
                     FocusedElement::LeftPanel => self.panel.left.is_closed = false,
@@ -124,12 +115,38 @@ impl Ui {
         self.bar.bottom.render(f, inner_bottom_bar_area, config);
 
         let mut middle_constraints = vec![];
+        let mut has_left_panel = false;
+        let mut left_panel_width = 0;
         if !self.panel.left.is_closed {
-            middle_constraints.push(Constraint::Percentage(25));
+            has_left_panel = true;
+            if self.focused_on == FocusedElement::LeftPanel {
+                if self.panel.right.is_closed {
+                    left_panel_width = 75;
+                } else {
+                    left_panel_width = 50;
+                }
+            } else {
+                left_panel_width = 25;
+            }
+            middle_constraints.push(Constraint::Percentage(left_panel_width));
         }
+
         middle_constraints.push(Constraint::Min(0)); // Center box, will take remaining space
+
+        let mut has_right_panel = false;
+        let mut right_panel_width = 0;
         if !self.panel.right.is_closed {
-            middle_constraints.push(Constraint::Percentage(25));
+            has_right_panel = true;
+            if self.focused_on == FocusedElement::RightPanel {
+                if self.panel.left.is_closed {
+                    right_panel_width = 75;
+                } else {
+                    right_panel_width = 50;
+                }
+            } else {
+                right_panel_width = 25;
+            }
+            middle_constraints.push(Constraint::Percentage(right_panel_width));
         }
 
         let middle_chunks = Layout::default()
@@ -137,43 +154,41 @@ impl Ui {
             .constraints(middle_constraints)
             .split(chunks[1]);
 
-        let left_panel_block = Block::default()
-            .borders(Borders::RIGHT)
-            .border_style(config.theme.primary)
-            .border_type(BorderType::QuadrantOutside)
-            .style(
-                Style::default()
-                    .bg(config.theme.background)
-                    .fg(config.theme.foreground),
-            );
+        let mut current_chunk_idx = 0;
 
-        let mut current_middle_chunk_index = 0;
-
-        if !self.panel.left.is_closed {
-            f.render_widget(left_panel_block, middle_chunks[current_middle_chunk_index]);
+        if has_left_panel {
+            let left_panel_block = Block::default()
+                .borders(Borders::RIGHT)
+                .border_style(config.theme.primary)
+                .border_type(BorderType::QuadrantOutside)
+                .style(
+                    Style::default()
+                        .bg(config.theme.background)
+                        .fg(config.theme.foreground),
+                );
+            f.render_widget(left_panel_block, middle_chunks[current_chunk_idx]);
             let inner_left_panel_area =
-                middle_chunks[current_middle_chunk_index].shrink(ShrinkDirection::Right, 1);
+                middle_chunks[current_chunk_idx].shrink(ShrinkDirection::Right, 1);
             self.panel.left.render(f, inner_left_panel_area, config);
-            current_middle_chunk_index += 1;
+            current_chunk_idx += 1;
         }
 
-        let center_area_for_panels = middle_chunks[current_middle_chunk_index];
-        current_middle_chunk_index += 1;
+        let center_area_for_panels = middle_chunks[current_chunk_idx];
+        current_chunk_idx += 1; // Move past the center panel's chunk
 
-        let right_panel_block = Block::default()
-            .borders(Borders::LEFT)
-            .border_style(config.theme.primary)
-            .border_type(BorderType::QuadrantOutside)
-            .style(
-                Style::default()
-                    .bg(config.theme.background)
-                    .fg(config.theme.foreground),
-            );
-
-        if !self.panel.right.is_closed {
-            f.render_widget(right_panel_block, middle_chunks[current_middle_chunk_index]);
+        if has_right_panel {
+            let right_panel_block = Block::default()
+                .borders(Borders::LEFT)
+                .border_style(config.theme.primary)
+                .border_type(BorderType::QuadrantOutside)
+                .style(
+                    Style::default()
+                        .bg(config.theme.background)
+                        .fg(config.theme.foreground),
+                );
+            f.render_widget(right_panel_block, middle_chunks[current_chunk_idx]);
             let inner_right_panel_area =
-                middle_chunks[current_middle_chunk_index].shrink(ShrinkDirection::Left, 1);
+                middle_chunks[current_chunk_idx].shrink(ShrinkDirection::Left, 1);
             self.panel.right.render(f, inner_right_panel_area, config);
         }
 
