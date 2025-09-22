@@ -1,5 +1,8 @@
 use crate::app::Config;
-use ratatui::Frame;
+use ratatui::{
+    Frame,
+    layout::{Direction, Rect},
+};
 
 #[derive(Debug, Clone)]
 pub enum WidgetItem {
@@ -31,7 +34,7 @@ pub struct Ui {
 impl Ui {
     pub fn render(&mut self, f: &mut Frame, config: &Config) {
         use ratatui::{
-            layout::{Constraint, Direction, Layout},
+            layout::{Constraint, Layout},
             style::Style,
             widgets::{Block, BorderType, Borders},
         };
@@ -54,7 +57,8 @@ impl Ui {
                     .fg(config.theme.foreground),
             );
         f.render_widget(top_bar, chunks[0]);
-        self.bar.top.render(f, chunks[0], config);
+        let inner_top_bar_area = chunks[0].shrink(ShrinkDirection::Bottom, 1);
+        self.bar.top.render(f, inner_top_bar_area, config);
 
         let bottom_bar = Block::default()
             .borders(Borders::TOP)
@@ -66,7 +70,8 @@ impl Ui {
                     .fg(config.theme.foreground),
             );
         f.render_widget(bottom_bar, chunks[2]);
-        self.bar.bottom.render(f, chunks[2], config);
+        let inner_bottom_bar_area = chunks[2].shrink(ShrinkDirection::Top, 1);
+        self.bar.bottom.render(f, inner_bottom_bar_area, config);
 
         let middle_chunks = Layout::default()
             .direction(Direction::Horizontal)
@@ -87,7 +92,8 @@ impl Ui {
                     .fg(config.theme.foreground),
             );
         f.render_widget(left_panel, middle_chunks[0]);
-        self.panel.left.render(f, middle_chunks[0], config);
+        let inner_left_panel_area = middle_chunks[0].shrink(ShrinkDirection::Right, 1);
+        self.panel.left.render(f, inner_left_panel_area, config);
 
         let right_panel = Block::default()
             .borders(Borders::LEFT)
@@ -99,7 +105,8 @@ impl Ui {
                     .fg(config.theme.foreground),
             );
         f.render_widget(right_panel, middle_chunks[2]);
-        self.panel.right.render(f, middle_chunks[2], config);
+        let inner_right_panel_area = middle_chunks[2].shrink(ShrinkDirection::Left, 1);
+        self.panel.right.render(f, inner_right_panel_area, config);
 
         let center_chunks = Layout::default()
             .direction(Direction::Vertical)
@@ -127,6 +134,36 @@ impl Ui {
                     .fg(config.theme.foreground),
             );
         f.render_widget(sub_panel, center_chunks[1]);
-        self.panel.sub.render(f, center_chunks[1], config);
+        let inner_sub_panel_area = center_chunks[1].shrink(ShrinkDirection::Top, 1);
+        self.panel.sub.render(f, inner_sub_panel_area, config);
+    }
+}
+
+#[derive(Clone, Copy)]
+enum ShrinkDirection {
+    Top,
+    Bottom,
+    Left,
+    Right,
+}
+trait ShrinkRect {
+    fn shrink(&self, direction: ShrinkDirection, length: u16) -> Self;
+}
+impl ShrinkRect for Rect {
+    fn shrink(&self, direction: ShrinkDirection, length: u16) -> Self {
+        let mut rect = self.clone();
+        match direction {
+            ShrinkDirection::Bottom => rect.height = rect.height.saturating_sub(length),
+            ShrinkDirection::Left => {
+                rect.x = rect.x.saturating_add(length);
+                rect.width = rect.width.saturating_sub(length)
+            }
+            ShrinkDirection::Right => rect.width = rect.width.saturating_sub(length),
+            ShrinkDirection::Top => {
+                rect.y = rect.y.saturating_add(length);
+                rect.height = rect.height.saturating_sub(length);
+            }
+        }
+        rect
     }
 }
