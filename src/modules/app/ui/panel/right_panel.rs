@@ -1,4 +1,4 @@
-use crossterm::event::MouseEvent;
+use crossterm::event::{KeyEvent, MouseEvent};
 #[derive(Debug, Default)]
 pub struct RightPanel {
     pub is_closed: bool,
@@ -19,5 +19,9 @@ impl RightPanel {
     pub fn handle_mouse_event(&mut self, _mouse_event: MouseEvent) {
         // TODO: Implement specific mouse event handling for RightPanel
         // println!("Right Panel mouse event: {:?}", mouse_event);
+    }
+
+    pub fn handle_key(&mut self, _key: KeyEvent) {
+        // TODO: Implement specific key event handling for RightPanel
     }
 }

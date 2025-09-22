@@ -1,7 +1,11 @@
 use config::Config;
-use crossterm::{execute,
+use crossterm::{
+    event::{
+        DisableMouseCapture, EnableMouseCapture, Event as CEvent, KeyEvent as CKeyEvent,
+        MouseButton, MouseEventKind,
+    },
+    execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
-    event::{EnableMouseCapture, DisableMouseCapture, Event as CEvent, MouseEventKind, MouseButton},
 };
 use event::{Event, EventHandler};
 use features::FeatureManager;
@@ -66,6 +70,9 @@ impl App {
         // }
     }
     pub fn process_binding(&mut self, _bind: &str) {}
+    pub fn process_key(&mut self, key: CKeyEvent) {
+        self.ui.handle_key(key);
+    }
     pub fn run(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         enable_raw_mode()?;
         let mut stdout = io::stdout();
@@ -94,11 +101,12 @@ impl App {
                             } else {
                                 self.process_system_bind(system_bind);
                             }
-                        }
-                        else if let Some(bind) =
+                        } else if let Some(bind) =
                             detected_bindings.first().map(|bind_id| bind_id.to_string())
                         {
                             self.process_binding(&bind)
+                        } else {
+                            self.process_key(key);
                         }
                     }
                     CEvent::Mouse(mouse_event) => match mouse_event.kind {
@@ -109,12 +117,16 @@ impl App {
                     },
                     _ => {}
                 },
-                Event::Tick => {},
+                Event::Tick => {}
             }
         }
 
         disable_raw_mode()?;
-        execute!(terminal.backend_mut(), LeaveAlternateScreen, DisableMouseCapture)?;
+        execute!(
+            terminal.backend_mut(),
+            LeaveAlternateScreen,
+            DisableMouseCapture
+        )?;
         terminal.show_cursor()?;
 
         Ok(())

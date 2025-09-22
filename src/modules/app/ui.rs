@@ -1,5 +1,5 @@
 use crate::app::Config;
-use crossterm::event::MouseEvent;
+use crossterm::event::{KeyEvent, MouseEvent};
 use ratatui::{
     Frame,
     layout::{Direction, Rect},
@@ -163,10 +163,10 @@ impl Ui {
         self.bar.bottom.render(f, inner_bottom_bar_area, config);
 
         let mut middle_constraints = vec![];
-        let mut has_left_panel = false;
-        if !self.panel.left.is_closed {
+        if self.panel.left.is_closed {
+            middle_constraints.push(Constraint::Max(5));
+        } else {
             let left_panel_width;
-            has_left_panel = true;
             if self.focused_on == FocusedElement::LeftPanel {
                 if self.panel.right.is_closed {
                     left_panel_width = 75;
@@ -181,9 +181,9 @@ impl Ui {
 
         middle_constraints.push(Constraint::Min(0)); // Center box, will take remaining space
 
-        let mut has_right_panel = false;
-        if !self.panel.right.is_closed {
-            has_right_panel = true;
+        if self.panel.right.is_closed {
+            middle_constraints.push(Constraint::Max(5));
+        } else {
             let right_panel_width;
             if self.focused_on == FocusedElement::RightPanel {
                 if self.panel.left.is_closed {
@@ -204,41 +204,37 @@ impl Ui {
 
         let mut current_chunk_idx = 0;
 
-        if has_left_panel {
-            self.left_panel_area = middle_chunks[current_chunk_idx];
-            let left_panel_block = Block::default()
-                .borders(Borders::RIGHT)
-                .border_style(config.theme.primary)
-                .border_type(BorderType::QuadrantOutside)
-                .style(
-                    Style::default()
-                        .bg(config.theme.background)
-                        .fg(config.theme.foreground),
-                );
-            f.render_widget(left_panel_block, self.left_panel_area);
-            let inner_left_panel_area = self.left_panel_area.shrink(ShrinkDirection::Right, 1);
-            self.panel.left.render(f, inner_left_panel_area, config);
-            current_chunk_idx += 1;
-        }
+        self.left_panel_area = middle_chunks[current_chunk_idx];
+        let left_panel_block = Block::default()
+            .borders(Borders::RIGHT)
+            .border_style(config.theme.primary)
+            .border_type(BorderType::QuadrantOutside)
+            .style(
+                Style::default()
+                    .bg(config.theme.background)
+                    .fg(config.theme.foreground),
+            );
+        f.render_widget(left_panel_block, self.left_panel_area);
+        let inner_left_panel_area = self.left_panel_area.shrink(ShrinkDirection::Right, 1);
+        self.panel.left.render(f, inner_left_panel_area, config);
+        current_chunk_idx += 1;
 
         let center_area_for_panels = middle_chunks[current_chunk_idx];
         current_chunk_idx += 1; // Move past the center panel's chunk
 
-        if has_right_panel {
-            self.right_panel_area = middle_chunks[current_chunk_idx];
-            let right_panel_block = Block::default()
-                .borders(Borders::LEFT)
-                .border_style(config.theme.primary)
-                .border_type(BorderType::QuadrantOutside)
-                .style(
-                    Style::default()
-                        .bg(config.theme.background)
-                        .fg(config.theme.foreground),
-                );
-            f.render_widget(right_panel_block, self.right_panel_area);
-            let inner_right_panel_area = self.right_panel_area.shrink(ShrinkDirection::Left, 1);
-            self.panel.right.render(f, inner_right_panel_area, config);
-        }
+        self.right_panel_area = middle_chunks[current_chunk_idx];
+        let right_panel_block = Block::default()
+            .borders(Borders::LEFT)
+            .border_style(config.theme.primary)
+            .border_type(BorderType::QuadrantOutside)
+            .style(
+                Style::default()
+                    .bg(config.theme.background)
+                    .fg(config.theme.foreground),
+            );
+        f.render_widget(right_panel_block, self.right_panel_area);
+        let inner_right_panel_area = self.right_panel_area.shrink(ShrinkDirection::Left, 1);
+        self.panel.right.render(f, inner_right_panel_area, config);
 
         let center_chunks = Layout::default()
             .direction(Direction::Vertical)
@@ -277,6 +273,15 @@ impl Ui {
             f.render_widget(sub_panel, self.sub_panel_area);
             let inner_sub_panel_area = self.sub_panel_area.shrink(ShrinkDirection::Top, 1);
             self.panel.sub.render(f, inner_sub_panel_area, config);
+        }
+    }
+    pub fn handle_key(&mut self, key: KeyEvent) {
+        match self.focused_on {
+            FocusedElement::MainPanel => self.panel.main.handle_key(key),
+            FocusedElement::SubPanel => self.panel.sub.handle_key(key),
+            FocusedElement::LeftPanel => self.panel.left.handle_key(key),
+            FocusedElement::RightPanel => self.panel.right.handle_key(key),
+            _ => {}
         }
     }
 }
