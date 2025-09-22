@@ -116,8 +116,8 @@ impl Ui {
 
         let mut middle_constraints = vec![];
         let mut has_left_panel = false;
-        let mut left_panel_width = 0;
         if !self.panel.left.is_closed {
+            let left_panel_width;
             has_left_panel = true;
             if self.focused_on == FocusedElement::LeftPanel {
                 if self.panel.right.is_closed {
@@ -134,9 +134,9 @@ impl Ui {
         middle_constraints.push(Constraint::Min(0)); // Center box, will take remaining space
 
         let mut has_right_panel = false;
-        let mut right_panel_width = 0;
         if !self.panel.right.is_closed {
             has_right_panel = true;
+            let right_panel_width;
             if self.focused_on == FocusedElement::RightPanel {
                 if self.panel.left.is_closed {
                     right_panel_width = 75;
@@ -243,7 +243,7 @@ pub trait ShrinkRect {
 }
 impl ShrinkRect for Rect {
     fn shrink(&self, direction: ShrinkDirection, length: u16) -> Self {
-        let mut rect = self.clone();
+        let mut rect = *self;
         match direction {
             ShrinkDirection::Bottom => rect.height = rect.height.saturating_sub(length),
             ShrinkDirection::Left => {

@@ -1,19 +1,12 @@
 pub mod core;
 pub mod extension;
 
+#[derive(Default)]
 pub struct FeatureManager {
     pub core: Vec<core::CoreFeature>,
     pub extension: Vec<extension::Extension>,
 }
 
-impl Default for FeatureManager {
-    fn default() -> Self {
-        Self {
-            core: Vec::new(),
-            extension: Vec::new(),
-        }
-    }
-}
 
 impl FeatureManager {
     pub fn new() -> Self {

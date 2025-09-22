@@ -97,8 +97,7 @@ impl App {
                         detected_bindings.first().map(|bind_id| bind_id.to_string())
                     {
                         self.process_binding(&bind)
-                    } else {
-                    }
+                    } 
                 }
                 Event::Tick => {}
             }
