@@ -57,6 +57,15 @@ impl App {
     pub fn set_workspace(&mut self, path: PathBuf) {
         self.workspace_dir = Some(path);
     }
+    pub fn process_system_bind(&mut self, system_bind: &str) {
+        if let Some(focus_id) = system_bind.strip_prefix("system.focus.") {
+            self.ui.focus_bind(focus_id);
+        }
+        // match system_bind {
+        //     _ => {}
+        // }
+    }
+    pub fn process_binding(&mut self, _bind: &str) {}
     pub fn run(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         enable_raw_mode()?;
         let mut stdout = io::stdout();
@@ -71,29 +80,24 @@ impl App {
 
             match self.event_handler.next() {
                 Event::Input(key) => {
-                    let bind_id: Option<String> = {
-                        let detected_bindings = self.config.keybindings.detect_events(&key);
+                    let detected_bindings = self.config.keybindings.detect_events(&key);
 
-                        // 1. System KeyBindings
+                    // 1. System KeyBindings
 
-                        if let Some(system_bind) = detected_bindings
-                            .iter()
-                            .find(|bind_id| bind_id.starts_with("system."))
-                        {
-                            Some(system_bind.to_string())
-                        } else if let Some(focused_bind) = detected_bindings
-                            .iter()
-                            .find(|bind_id| bind_id.starts_with("focus."))
-                        {
-                            Some(focused_bind.to_string())
-                        } else {
-                            detected_bindings.first().map(|bind_id| bind_id.to_string())
-                        }
-                    };
-                    if let Some(bind_id) = bind_id
-                        && bind_id.as_str() == "system.quit"
+                    if let Some(system_bind) = detected_bindings
+                        .iter()
+                        .find(|bind_id| bind_id.starts_with("system."))
                     {
-                        break;
+                        if system_bind == "system.quit" {
+                            break;
+                        } else {
+                            self.process_system_bind(system_bind);
+                        }
+                    } else if let Some(bind) =
+                        detected_bindings.first().map(|bind_id| bind_id.to_string())
+                    {
+                        self.process_binding(&bind)
+                    } else {
                     }
                 }
                 Event::Tick => {}

@@ -96,9 +96,10 @@ impl Keybindings {
         let mut result = Vec::new();
         for bindset in &self.mappings {
             if let Ok(bind) = &Self::parse_keybind(key)
-                && bind == &bindset.keys {
-                    result.push(bindset.id.clone());
-                }
+                && bind == &bindset.keys
+            {
+                result.push(bindset.id.clone());
+            }
         }
         result
     }

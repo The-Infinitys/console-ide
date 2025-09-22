@@ -1,6 +1,7 @@
 #[derive(Debug, Default)]
-
-pub struct LeftPanel {}
+pub struct LeftPanel {
+    pub is_closed: bool,
+}
 
 impl LeftPanel {
     pub fn render(

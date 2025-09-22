@@ -41,11 +41,11 @@ impl EventHandler {
                     if crossterm::event::poll(timeout).expect("no events available")
                         && let CEvent::Key(key) =
                             crossterm::event::read().expect("unable to read event")
-                        {
-                            sender
-                                .send(Event::Input(key))
-                                .expect("failed to send event");
-                        }
+                    {
+                        sender
+                            .send(Event::Input(key))
+                            .expect("failed to send event");
+                    }
 
                     if last_tick.elapsed() >= tick_rate {
                         sender.send(Event::Tick).expect("failed to send tick event");

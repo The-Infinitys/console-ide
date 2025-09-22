@@ -1,5 +1,7 @@
 #[derive(Debug, Default)]
-pub struct SubPanel {}
+pub struct SubPanel {
+    pub is_closed: bool,
+}
 
 impl SubPanel {
     pub fn render(

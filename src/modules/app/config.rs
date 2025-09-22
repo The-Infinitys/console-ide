@@ -4,8 +4,8 @@ use std::{collections::HashMap, fs, io, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-pub mod theme;
 pub mod keybindings;
+pub mod theme;
 use crate::modules::app::config::keybindings::Keybindings;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -16,8 +16,7 @@ pub enum ConfigValue {
     Bool(bool),
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[derive(Default)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct Config {
     pub values: HashMap<String, ConfigValue>,
     #[serde(skip)]
@@ -25,7 +24,6 @@ pub struct Config {
     #[serde(skip)]
     pub keybindings: Keybindings,
 }
-
 
 impl Config {
     pub fn load(config_path: &PathBuf) -> io::Result<Self> {
@@ -41,7 +39,8 @@ impl Config {
         config.theme = Theme::load(&theme_path).unwrap_or_else(|_| Theme::default());
         // keybindingsの読み込み
         let keybindings_path = Self::get_keybindings_path();
-        config.keybindings = Keybindings::load(&keybindings_path).unwrap_or_else(|_| Keybindings::default());
+        config.keybindings =
+            Keybindings::load(&keybindings_path).unwrap_or_else(|_| Keybindings::default());
         Ok(config)
     }
 
@@ -55,7 +54,8 @@ impl Config {
         // themeの保存
         self.theme.save_to_path(&Self::get_theme_path())?;
         // keybindingsの保存
-        self.keybindings.save_to_path(&Self::get_keybindings_path())?;
+        self.keybindings
+            .save_to_path(&Self::get_keybindings_path())?;
         Ok(())
     }
     fn get_config_path() -> PathBuf {

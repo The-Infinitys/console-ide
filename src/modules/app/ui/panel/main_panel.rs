@@ -1,6 +1,6 @@
 #[derive(Debug, Default)]
-
-pub struct MainPanel {}
+pub struct MainPanel {
+}
 
 impl MainPanel {
     pub fn render(

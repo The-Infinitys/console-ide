@@ -3,7 +3,6 @@ use ratatui::{
     Frame,
     layout::{Direction, Rect},
 };
-
 #[derive(Debug, Clone)]
 pub enum WidgetItem {
     Buildin(BuildinWidget),
@@ -29,9 +28,60 @@ mod panel;
 pub struct Ui {
     panel: panel::PanelUi,
     bar: bar::BarUi,
+    pub focused_on: FocusedElement,
+}
+#[derive(Default, Debug, PartialEq, Eq)]
+pub enum FocusedElement {
+    #[default]
+    MainPanel,
+    SubPanel,
+    LeftPanel,
+    RightPanel,
+    Notification,
+    Pallete,
 }
 
 impl Ui {
+    pub fn focus_bind(&mut self, focus_id: &str) {
+        let new_focus = match focus_id {
+            "mainpanel" => Some(FocusedElement::MainPanel),
+            "subpanel" => Some(FocusedElement::SubPanel),
+            "leftpanel" => Some(FocusedElement::LeftPanel),
+            "rightpanel" => Some(FocusedElement::RightPanel),
+            _ => None,
+        };
+
+        if let Some(new_focus) = new_focus {
+            // If the new focus is the same as the current focus, close the panel and go to MainPanel
+            if self.focused_on == new_focus {
+                match self.focused_on {
+                    FocusedElement::LeftPanel => self.panel.left.is_closed = true,
+                    FocusedElement::RightPanel => self.panel.right.is_closed = true,
+                    FocusedElement::SubPanel => self.panel.sub.is_closed = true,
+                    _ => {} // MainPanel, Notification, Pallete don't have is_closed
+                }
+                self.focused_on = FocusedElement::MainPanel;
+            } else {
+                // If the new focus is different, open the new panel and close the old one (if applicable)
+                // First, close the currently focused panel (if it's a panel that can be closed)
+                match self.focused_on {
+                    FocusedElement::LeftPanel => self.panel.left.is_closed = true,
+                    FocusedElement::RightPanel => self.panel.right.is_closed = true,
+                    FocusedElement::SubPanel => self.panel.sub.is_closed = true,
+                    _ => {}
+                }
+
+                // Then, open the new panel (if it's a panel that can be opened)
+                match new_focus {
+                    FocusedElement::LeftPanel => self.panel.left.is_closed = false,
+                    FocusedElement::RightPanel => self.panel.right.is_closed = false,
+                    FocusedElement::SubPanel => self.panel.sub.is_closed = false,
+                    _ => {}
+                }
+                self.focused_on = new_focus;
+            }
+        }
+    }
     pub fn render(&mut self, f: &mut Frame, config: &Config) {
         use ratatui::{
             layout::{Constraint, Layout},
@@ -73,16 +123,21 @@ impl Ui {
         let inner_bottom_bar_area = chunks[2].shrink(ShrinkDirection::Top, 1);
         self.bar.bottom.render(f, inner_bottom_bar_area, config);
 
+        let mut middle_constraints = vec![];
+        if !self.panel.left.is_closed {
+            middle_constraints.push(Constraint::Percentage(25));
+        }
+        middle_constraints.push(Constraint::Min(0)); // Center box, will take remaining space
+        if !self.panel.right.is_closed {
+            middle_constraints.push(Constraint::Percentage(25));
+        }
+
         let middle_chunks = Layout::default()
             .direction(Direction::Horizontal)
-            .constraints([
-                Constraint::Min(1),     // Left panel
-                Constraint::Min(0),     // Center box
-                Constraint::Length(20), // Right panel (placeholder width)
-            ])
+            .constraints(middle_constraints)
             .split(chunks[1]);
 
-        let left_panel = Block::default()
+        let left_panel_block = Block::default()
             .borders(Borders::RIGHT)
             .border_style(config.theme.primary)
             .border_type(BorderType::QuadrantOutside)
@@ -91,11 +146,21 @@ impl Ui {
                     .bg(config.theme.background)
                     .fg(config.theme.foreground),
             );
-        f.render_widget(left_panel, middle_chunks[0]);
-        let inner_left_panel_area = middle_chunks[0].shrink(ShrinkDirection::Right, 1);
-        self.panel.left.render(f, inner_left_panel_area, config);
 
-        let right_panel = Block::default()
+        let mut current_middle_chunk_index = 0;
+
+        if !self.panel.left.is_closed {
+            f.render_widget(left_panel_block, middle_chunks[current_middle_chunk_index]);
+            let inner_left_panel_area =
+                middle_chunks[current_middle_chunk_index].shrink(ShrinkDirection::Right, 1);
+            self.panel.left.render(f, inner_left_panel_area, config);
+            current_middle_chunk_index += 1;
+        }
+
+        let center_area_for_panels = middle_chunks[current_middle_chunk_index];
+        current_middle_chunk_index += 1;
+
+        let right_panel_block = Block::default()
             .borders(Borders::LEFT)
             .border_style(config.theme.primary)
             .border_type(BorderType::QuadrantOutside)
@@ -104,17 +169,27 @@ impl Ui {
                     .bg(config.theme.background)
                     .fg(config.theme.foreground),
             );
-        f.render_widget(right_panel, middle_chunks[2]);
-        let inner_right_panel_area = middle_chunks[2].shrink(ShrinkDirection::Left, 1);
-        self.panel.right.render(f, inner_right_panel_area, config);
+
+        if !self.panel.right.is_closed {
+            f.render_widget(right_panel_block, middle_chunks[current_middle_chunk_index]);
+            let inner_right_panel_area =
+                middle_chunks[current_middle_chunk_index].shrink(ShrinkDirection::Left, 1);
+            self.panel.right.render(f, inner_right_panel_area, config);
+        }
 
         let center_chunks = Layout::default()
             .direction(Direction::Vertical)
-            .constraints([
-                Constraint::Percentage(70), // Main panel
-                Constraint::Percentage(30), // Sub panel
-            ])
-            .split(middle_chunks[1]);
+            .constraints(match self.focused_on {
+                FocusedElement::SubPanel => [
+                    Constraint::Percentage(25), // Main panel
+                    Constraint::Percentage(75), // Sub panel
+                ],
+                _ => [
+                    Constraint::Percentage(75), // Main panel
+                    Constraint::Percentage(25), // Sub panel
+                ],
+            })
+            .split(center_area_for_panels);
 
         let main_panel = Block::default().borders(Borders::NONE).style(
             Style::default()
@@ -124,29 +199,31 @@ impl Ui {
         f.render_widget(main_panel, center_chunks[0]);
         self.panel.main.render(f, center_chunks[0], config);
 
-        let sub_panel = Block::default()
-            .borders(Borders::TOP)
-            .border_style(config.theme.primary)
-            .border_type(BorderType::QuadrantOutside)
-            .style(
-                Style::default()
-                    .bg(config.theme.background)
-                    .fg(config.theme.foreground),
-            );
-        f.render_widget(sub_panel, center_chunks[1]);
-        let inner_sub_panel_area = center_chunks[1].shrink(ShrinkDirection::Top, 1);
-        self.panel.sub.render(f, inner_sub_panel_area, config);
+        if !self.panel.sub.is_closed {
+            let sub_panel = Block::default()
+                .borders(Borders::TOP)
+                .border_style(config.theme.primary)
+                .border_type(BorderType::QuadrantOutside)
+                .style(
+                    Style::default()
+                        .bg(config.theme.background)
+                        .fg(config.theme.foreground),
+                );
+            f.render_widget(sub_panel, center_chunks[1]);
+            let inner_sub_panel_area = center_chunks[1].shrink(ShrinkDirection::Top, 1);
+            self.panel.sub.render(f, inner_sub_panel_area, config);
+        }
     }
 }
 
 #[derive(Clone, Copy)]
-enum ShrinkDirection {
+pub enum ShrinkDirection {
     Top,
     Bottom,
     Left,
     Right,
 }
-trait ShrinkRect {
+pub trait ShrinkRect {
     fn shrink(&self, direction: ShrinkDirection, length: u16) -> Self;
 }
 impl ShrinkRect for Rect {
