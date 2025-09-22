@@ -1,7 +1,7 @@
 use config::Config;
-use crossterm::{
-    execute,
+use crossterm::{execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
+    event::{EnableMouseCapture, DisableMouseCapture, Event as CEvent, MouseEventKind, MouseButton},
 };
 use event::{Event, EventHandler};
 use features::FeatureManager;
@@ -69,7 +69,7 @@ impl App {
     pub fn run(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         enable_raw_mode()?;
         let mut stdout = io::stdout();
-        execute!(stdout, EnterAlternateScreen)?;
+        execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
         let backend = CrosstermBackend::new(stdout);
         let mut terminal = Terminal::new(backend)?;
 
@@ -79,32 +79,42 @@ impl App {
             })?;
 
             match self.event_handler.next() {
-                Event::Input(key) => {
-                    let detected_bindings = self.config.keybindings.detect_events(&key);
+                Event::Input(event) => match event {
+                    CEvent::Key(key) => {
+                        let detected_bindings = self.config.keybindings.detect_events(&key);
 
-                    // 1. System KeyBindings
+                        // 1. System KeyBindings
 
-                    if let Some(system_bind) = detected_bindings
-                        .iter()
-                        .find(|bind_id| bind_id.starts_with("system."))
-                    {
-                        if system_bind == "system.quit" {
-                            break;
-                        } else {
-                            self.process_system_bind(system_bind);
+                        if let Some(system_bind) = detected_bindings
+                            .iter()
+                            .find(|bind_id| bind_id.starts_with("system."))
+                        {
+                            if system_bind == "system.quit" {
+                                break;
+                            } else {
+                                self.process_system_bind(system_bind);
+                            }
                         }
-                    } else if let Some(bind) =
-                        detected_bindings.first().map(|bind_id| bind_id.to_string())
-                    {
-                        self.process_binding(&bind)
-                    } 
-                }
-                Event::Tick => {}
+                        else if let Some(bind) =
+                            detected_bindings.first().map(|bind_id| bind_id.to_string())
+                        {
+                            self.process_binding(&bind)
+                        }
+                    }
+                    CEvent::Mouse(mouse_event) => match mouse_event.kind {
+                        MouseEventKind::Down(MouseButton::Left) => {
+                            self.ui.handle_mouse_event(mouse_event);
+                        }
+                        _ => {}
+                    },
+                    _ => {}
+                },
+                Event::Tick => {},
             }
         }
 
         disable_raw_mode()?;
-        execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
+        execute!(terminal.backend_mut(), LeaveAlternateScreen, DisableMouseCapture)?;
         terminal.show_cursor()?;
 
         Ok(())

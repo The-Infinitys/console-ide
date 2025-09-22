@@ -1,3 +1,4 @@
+use crossterm::event::MouseEvent;
 #[derive(Debug, Default)]
 pub struct MainPanel {
 }
@@ -12,5 +13,10 @@ impl MainPanel {
         use ratatui::widgets::Paragraph;
         let widget = Paragraph::new("Main Panel");
         f.render_widget(widget, area);
+    }
+
+    pub fn handle_mouse_event(&mut self, _mouse_event: MouseEvent) {
+        // TODO: Implement specific mouse event handling for MainPanel
+        // println!("Main Panel mouse event: {:?}", mouse_event);
     }
 }

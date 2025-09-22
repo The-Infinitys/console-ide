@@ -1,3 +1,4 @@
+use crossterm::event::MouseEvent;
 #[derive(Debug, Default)]
 
 pub struct BottomBar {}
@@ -12,5 +13,10 @@ impl BottomBar {
         use ratatui::widgets::Paragraph;
         let widget = Paragraph::new("Bottom Bar");
         f.render_widget(widget, area);
+    }
+
+    pub fn handle_mouse_event(&mut self, _mouse_event: MouseEvent) {
+        // TODO: Implement specific mouse event handling for BottomBar
+        // println!("Bottom Bar mouse event: {:?}", mouse_event);
     }
 }

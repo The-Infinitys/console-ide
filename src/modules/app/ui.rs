@@ -1,4 +1,5 @@
 use crate::app::Config;
+use crossterm::event::MouseEvent;
 use ratatui::{
     Frame,
     layout::{Direction, Rect},
@@ -29,6 +30,12 @@ pub struct Ui {
     panel: panel::PanelUi,
     bar: bar::BarUi,
     pub focused_on: FocusedElement,
+    top_bar_area: Rect,
+    bottom_bar_area: Rect,
+    left_panel_area: Rect,
+    right_panel_area: Rect,
+    main_panel_area: Rect,
+    sub_panel_area: Rect,
 }
 #[derive(Default, Debug, PartialEq, Eq)]
 pub enum FocusedElement {
@@ -73,6 +80,45 @@ impl Ui {
             }
         }
     }
+    pub fn handle_mouse_event(&mut self, mouse_event: MouseEvent) {
+        let mouse_pos = (mouse_event.column, mouse_event.row);
+
+        if self
+            .top_bar_area
+            .contains(ratatui::prelude::Position::new(mouse_pos.0, mouse_pos.1))
+        {
+            self.bar.top.handle_mouse_event(mouse_event);
+        } else if self
+            .bottom_bar_area
+            .contains(ratatui::prelude::Position::new(mouse_pos.0, mouse_pos.1))
+        {
+            self.bar.bottom.handle_mouse_event(mouse_event);
+        } else if self
+            .left_panel_area
+            .contains(ratatui::prelude::Position::new(mouse_pos.0, mouse_pos.1))
+        {
+            self.focused_on = FocusedElement::LeftPanel;
+            self.panel.left.handle_mouse_event(mouse_event);
+        } else if self
+            .right_panel_area
+            .contains(ratatui::prelude::Position::new(mouse_pos.0, mouse_pos.1))
+        {
+            self.focused_on = FocusedElement::RightPanel;
+            self.panel.right.handle_mouse_event(mouse_event);
+        } else if self
+            .sub_panel_area
+            .contains(ratatui::prelude::Position::new(mouse_pos.0, mouse_pos.1))
+        {
+            self.focused_on = FocusedElement::SubPanel;
+            self.panel.sub.handle_mouse_event(mouse_event);
+        } else if self
+            .main_panel_area
+            .contains(ratatui::prelude::Position::new(mouse_pos.0, mouse_pos.1))
+        {
+            self.focused_on = FocusedElement::MainPanel;
+            self.panel.main.handle_mouse_event(mouse_event);
+        }
+    }
     pub fn render(&mut self, f: &mut Frame, config: &Config) {
         use ratatui::{
             layout::{Constraint, Layout},
@@ -88,6 +134,7 @@ impl Ui {
             ])
             .split(f.area());
 
+        self.top_bar_area = chunks[0];
         let top_bar = Block::default()
             .borders(Borders::BOTTOM)
             .border_style(config.theme.primary)
@@ -97,10 +144,11 @@ impl Ui {
                     .bg(config.theme.background)
                     .fg(config.theme.foreground),
             );
-        f.render_widget(top_bar, chunks[0]);
-        let inner_top_bar_area = chunks[0].shrink(ShrinkDirection::Bottom, 1);
+        f.render_widget(top_bar, self.top_bar_area);
+        let inner_top_bar_area = self.top_bar_area.shrink(ShrinkDirection::Bottom, 1);
         self.bar.top.render(f, inner_top_bar_area, config);
 
+        self.bottom_bar_area = chunks[2];
         let bottom_bar = Block::default()
             .borders(Borders::TOP)
             .border_style(config.theme.primary)
@@ -110,8 +158,8 @@ impl Ui {
                     .bg(config.theme.background)
                     .fg(config.theme.foreground),
             );
-        f.render_widget(bottom_bar, chunks[2]);
-        let inner_bottom_bar_area = chunks[2].shrink(ShrinkDirection::Top, 1);
+        f.render_widget(bottom_bar, self.bottom_bar_area);
+        let inner_bottom_bar_area = self.bottom_bar_area.shrink(ShrinkDirection::Top, 1);
         self.bar.bottom.render(f, inner_bottom_bar_area, config);
 
         let mut middle_constraints = vec![];
@@ -157,6 +205,7 @@ impl Ui {
         let mut current_chunk_idx = 0;
 
         if has_left_panel {
+            self.left_panel_area = middle_chunks[current_chunk_idx];
             let left_panel_block = Block::default()
                 .borders(Borders::RIGHT)
                 .border_style(config.theme.primary)
@@ -166,9 +215,8 @@ impl Ui {
                         .bg(config.theme.background)
                         .fg(config.theme.foreground),
                 );
-            f.render_widget(left_panel_block, middle_chunks[current_chunk_idx]);
-            let inner_left_panel_area =
-                middle_chunks[current_chunk_idx].shrink(ShrinkDirection::Right, 1);
+            f.render_widget(left_panel_block, self.left_panel_area);
+            let inner_left_panel_area = self.left_panel_area.shrink(ShrinkDirection::Right, 1);
             self.panel.left.render(f, inner_left_panel_area, config);
             current_chunk_idx += 1;
         }
@@ -177,6 +225,7 @@ impl Ui {
         current_chunk_idx += 1; // Move past the center panel's chunk
 
         if has_right_panel {
+            self.right_panel_area = middle_chunks[current_chunk_idx];
             let right_panel_block = Block::default()
                 .borders(Borders::LEFT)
                 .border_style(config.theme.primary)
@@ -186,9 +235,8 @@ impl Ui {
                         .bg(config.theme.background)
                         .fg(config.theme.foreground),
                 );
-            f.render_widget(right_panel_block, middle_chunks[current_chunk_idx]);
-            let inner_right_panel_area =
-                middle_chunks[current_chunk_idx].shrink(ShrinkDirection::Left, 1);
+            f.render_widget(right_panel_block, self.right_panel_area);
+            let inner_right_panel_area = self.right_panel_area.shrink(ShrinkDirection::Left, 1);
             self.panel.right.render(f, inner_right_panel_area, config);
         }
 
@@ -206,15 +254,17 @@ impl Ui {
             })
             .split(center_area_for_panels);
 
+        self.main_panel_area = center_chunks[0];
         let main_panel = Block::default().borders(Borders::NONE).style(
             Style::default()
                 .bg(config.theme.background)
                 .fg(config.theme.foreground),
         );
-        f.render_widget(main_panel, center_chunks[0]);
-        self.panel.main.render(f, center_chunks[0], config);
+        f.render_widget(main_panel, self.main_panel_area);
+        self.panel.main.render(f, self.main_panel_area, config);
 
         if !self.panel.sub.is_closed {
+            self.sub_panel_area = center_chunks[1];
             let sub_panel = Block::default()
                 .borders(Borders::TOP)
                 .border_style(config.theme.primary)
@@ -224,8 +274,8 @@ impl Ui {
                         .bg(config.theme.background)
                         .fg(config.theme.foreground),
                 );
-            f.render_widget(sub_panel, center_chunks[1]);
-            let inner_sub_panel_area = center_chunks[1].shrink(ShrinkDirection::Top, 1);
+            f.render_widget(sub_panel, self.sub_panel_area);
+            let inner_sub_panel_area = self.sub_panel_area.shrink(ShrinkDirection::Top, 1);
             self.panel.sub.render(f, inner_sub_panel_area, config);
         }
     }

@@ -1,4 +1,4 @@
-use crossterm::event::{Event as CEvent, KeyEvent};
+use crossterm::event::{Event as CEvent};
 use std::{
     sync::mpsc,
     thread,
@@ -6,10 +6,10 @@ use std::{
 };
 
 /// Terminal events.
-#[derive(Clone, Copy, Debug)]
-pub enum Event<I> {
+#[derive(Clone, Debug)]
+pub enum Event {
     /// Input event.
-    Input(I),
+    Input(CEvent),
     /// Tick event.
     Tick,
 }
@@ -18,9 +18,9 @@ pub enum Event<I> {
 #[allow(dead_code)]
 pub struct EventHandler {
     /// Event sender channel.
-    sender: mpsc::Sender<Event<KeyEvent>>,
+    sender: mpsc::Sender<Event>,
     /// Event receiver channel.
-    receiver: mpsc::Receiver<Event<KeyEvent>>,
+    receiver: mpsc::Receiver<Event>,
     /// Event handler thread.
     handler: thread::JoinHandle<()>,
 }
@@ -38,12 +38,9 @@ impl EventHandler {
                         .checked_sub(last_tick.elapsed())
                         .unwrap_or(tick_rate);
 
-                    if crossterm::event::poll(timeout).expect("no events available")
-                        && let CEvent::Key(key) =
-                            crossterm::event::read().expect("unable to read event")
-                    {
+                    if crossterm::event::poll(timeout).expect("no events available") {
                         sender
-                            .send(Event::Input(key))
+                            .send(Event::Input(crossterm::event::read().expect("unable to read event")))
                             .expect("failed to send event");
                     }
 
@@ -65,7 +62,7 @@ impl EventHandler {
     ///
     /// This function will always block the current thread if
     /// there are no events available and will never return an error.
-    pub fn next(&self) -> Event<KeyEvent> {
+    pub fn next(&self) -> Event {
         self.receiver.recv().expect("failed to receive event")
     }
 }

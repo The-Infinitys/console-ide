@@ -1,3 +1,4 @@
+use crossterm::event::MouseEvent;
 #[derive(Debug, Default)]
 pub struct LeftPanel {
     pub is_closed: bool,
@@ -13,5 +14,10 @@ impl LeftPanel {
         use ratatui::widgets::Paragraph;
         let widget = Paragraph::new("Left Panel");
         f.render_widget(widget, area);
+    }
+
+    pub fn handle_mouse_event(&mut self, _mouse_event: MouseEvent) {
+        // TODO: Implement specific mouse event handling for LeftPanel
+        // println!("Left Panel mouse event: {:?}", mouse_event);
     }
 }
