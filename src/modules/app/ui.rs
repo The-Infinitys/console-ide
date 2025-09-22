@@ -75,12 +75,6 @@ impl Ui {
                 }
                 self.focused_on = FocusedElement::MainPanel;
             } else {
-                // Close all panels and pallete first
-                self.panel.left.is_closed = true;
-                self.panel.right.is_closed = true;
-                self.panel.sub.is_closed = true;
-                self.pallete.is_open = false;
-
                 // Then, open the new panel (if it's a panel that can be opened)
                 match new_focus {
                     FocusedElement::LeftPanel => self.panel.left.is_closed = false,

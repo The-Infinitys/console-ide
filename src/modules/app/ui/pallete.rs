@@ -4,7 +4,7 @@ use ratatui::{
     Frame,
     layout::Rect,
     style::Style,
-    widgets::{Block, BorderType, Borders, Paragraph},
+    widgets::{Block, BorderType, Borders, Clear, Paragraph},
 };
 
 #[derive(Debug, Default)]
@@ -23,6 +23,7 @@ impl Pallete {
         let width = area.width / 2;
         let x = area.width / 2 - width / 2;
         let pallete_area = Rect::new(x, 1, width, 3); // 1 character from top, 3 lines height for border + input
+        f.render_widget(Clear, pallete_area.into());
 
         let input_block = Block::default()
             .borders(Borders::ALL)
