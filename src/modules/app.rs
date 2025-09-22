@@ -80,7 +80,8 @@ impl App {
         execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
         let backend = CrosstermBackend::new(stdout);
         let mut terminal = Terminal::new(backend)?;
-
+        self.ui
+            .add_notification(ui::NotificationType::Notify, "Hello, Wolrd", "Console IDE");
         loop {
             terminal.draw(|f| {
                 self.render(f);

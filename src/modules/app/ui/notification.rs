@@ -3,7 +3,7 @@ use ratatui::{
     Frame,
     layout::Rect,
     style::Style,
-    widgets::{Block, BorderType, Borders, Paragraph},
+    widgets::{Block, BorderType, Borders, Clear, Paragraph},
 };
 
 use std::collections::VecDeque;
@@ -111,6 +111,7 @@ impl NotifyManager {
                 notification_width,
                 notification_height,
             );
+            f.render_widget(Clear, notification_area.into());
 
             widget.render(f, notification_area, config);
             rendered_height += notification_height + margin;

@@ -15,7 +15,7 @@ pub struct BuildinWidget {
     pub id: String,
     // 必要に応じて追加
 }
-
+pub use notification::NotificationType;
 #[derive(Debug, Clone)]
 pub struct ExtensionWidget {
     pub id: String,
@@ -304,12 +304,12 @@ impl Ui {
 
     pub fn add_notification(
         &mut self,
-        notification_type: notification::NotificationType,
-        title: String,
-        content: String,
+        notification_type: NotificationType,
+        title: &str,
+        content: &str,
     ) {
         self.notification_manager
-            .add(notification_type, title, content);
+            .add(notification_type, title.to_string(), content.to_string());
     }
 }
 
