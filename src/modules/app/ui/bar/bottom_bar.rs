@@ -11,7 +11,7 @@ impl BottomBar {
         _config: &crate::app::Config,
     ) {
         use ratatui::widgets::Paragraph;
-        let widget = Paragraph::new("Bottom Bar");
+        let widget = Paragraph::new("console-ide 0.1.0");
         f.render_widget(widget, area);
     }
 

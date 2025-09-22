@@ -73,6 +73,7 @@ impl App {
     pub fn process_key(&mut self, key: CKeyEvent) {
         self.ui.handle_key(key);
     }
+
     pub fn run(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         enable_raw_mode()?;
         let mut stdout = io::stdout();
