@@ -109,9 +109,11 @@ impl App {
                             self.process_key(key);
                         }
                     }
-                    CEvent::Mouse(mouse_event) => if let MouseEventKind::Down(MouseButton::Left) = mouse_event.kind {
-                        self.ui.handle_mouse_event(mouse_event);
-                    },
+                    CEvent::Mouse(mouse_event) => {
+                        if let MouseEventKind::Down(MouseButton::Left) = mouse_event.kind {
+                            self.ui.handle_mouse_event(mouse_event);
+                        }
+                    }
                     _ => {}
                 },
                 Event::Tick => {}

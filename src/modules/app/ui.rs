@@ -24,11 +24,15 @@ pub struct ExtensionWidget {
 }
 
 mod bar;
+mod notification;
+mod pallete;
 mod panel;
 #[derive(Debug, Default)]
 pub struct Ui {
     panel: panel::PanelUi,
     bar: bar::BarUi,
+    pallete: pallete::Pallete,
+    notification_manager: notification::NotifyManager,
     pub focused_on: FocusedElement,
     top_bar_area: Rect,
     bottom_bar_area: Rect,
@@ -55,6 +59,7 @@ impl Ui {
             "subpanel" => Some(FocusedElement::SubPanel),
             "leftpanel" => Some(FocusedElement::LeftPanel),
             "rightpanel" => Some(FocusedElement::RightPanel),
+            "pallete" => Some(FocusedElement::Pallete),
             _ => None,
         };
 
@@ -65,15 +70,23 @@ impl Ui {
                     FocusedElement::LeftPanel => self.panel.left.is_closed = true,
                     FocusedElement::RightPanel => self.panel.right.is_closed = true,
                     FocusedElement::SubPanel => self.panel.sub.is_closed = true,
-                    _ => {} // MainPanel, Notification, Pallete don't have is_closed
+                    FocusedElement::Pallete => self.pallete.is_open = false,
+                    _ => {} // MainPanel, Notification don't have is_closed
                 }
                 self.focused_on = FocusedElement::MainPanel;
             } else {
+                // Close all panels and pallete first
+                self.panel.left.is_closed = true;
+                self.panel.right.is_closed = true;
+                self.panel.sub.is_closed = true;
+                self.pallete.is_open = false;
+
                 // Then, open the new panel (if it's a panel that can be opened)
                 match new_focus {
                     FocusedElement::LeftPanel => self.panel.left.is_closed = false,
                     FocusedElement::RightPanel => self.panel.right.is_closed = false,
                     FocusedElement::SubPanel => self.panel.sub.is_closed = false,
+                    FocusedElement::Pallete => self.pallete.is_open = true,
                     _ => {}
                 }
                 self.focused_on = new_focus;
@@ -274,8 +287,18 @@ impl Ui {
             let inner_sub_panel_area = self.sub_panel_area.shrink(ShrinkDirection::Top, 1);
             self.panel.sub.render(f, inner_sub_panel_area, config);
         }
+
+        // Render Pallete last to ensure it's on top
+        self.pallete.render(f, f.area(), config);
+
+        // Render Notifications last to ensure they are on top
+        self.notification_manager.render(f, f.area(), config);
     }
     pub fn handle_key(&mut self, key: KeyEvent) {
+        if self.pallete.is_open {
+            self.pallete.handle_key(key);
+            return;
+        }
         match self.focused_on {
             FocusedElement::MainPanel => self.panel.main.handle_key(key),
             FocusedElement::SubPanel => self.panel.sub.handle_key(key),
@@ -283,6 +306,16 @@ impl Ui {
             FocusedElement::RightPanel => self.panel.right.handle_key(key),
             _ => {}
         }
+    }
+
+    pub fn add_notification(
+        &mut self,
+        notification_type: notification::NotificationType,
+        title: String,
+        content: String,
+    ) {
+        self.notification_manager
+            .add(notification_type, title, content);
     }
 }
 

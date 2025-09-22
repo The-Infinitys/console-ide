@@ -59,6 +59,21 @@ pub struct Theme {
         deserialize_with = "deserialize_color"
     )]
     pub accent6: Color,
+    #[serde(
+        serialize_with = "serialize_color",
+        deserialize_with = "deserialize_color"
+    )]
+    pub warning: Color,
+    #[serde(
+        serialize_with = "serialize_color",
+        deserialize_with = "deserialize_color"
+    )]
+    pub error: Color,
+    #[serde(
+        serialize_with = "serialize_color",
+        deserialize_with = "deserialize_color"
+    )]
+    pub info: Color,
 }
 
 impl Default for Theme {
@@ -75,6 +90,9 @@ impl Default for Theme {
             accent4: Color::Cyan,
             accent5: Color::Blue,
             accent6: Color::Magenta,
+            warning: Color::Yellow,
+            error: Color::Red,
+            info: Color::Green,
         }
     }
 }

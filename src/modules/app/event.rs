@@ -1,4 +1,4 @@
-use crossterm::event::{Event as CEvent};
+use crossterm::event::Event as CEvent;
 use std::{
     sync::mpsc,
     thread,
@@ -40,7 +40,9 @@ impl EventHandler {
 
                     if crossterm::event::poll(timeout).expect("no events available") {
                         sender
-                            .send(Event::Input(crossterm::event::read().expect("unable to read event")))
+                            .send(Event::Input(
+                                crossterm::event::read().expect("unable to read event"),
+                            ))
                             .expect("failed to send event");
                     }
 

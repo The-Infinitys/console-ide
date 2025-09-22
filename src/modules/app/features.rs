@@ -7,7 +7,6 @@ pub struct FeatureManager {
     pub extension: Vec<extension::Extension>,
 }
 
-
 impl FeatureManager {
     pub fn new() -> Self {
         Self::default()
