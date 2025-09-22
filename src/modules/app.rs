@@ -81,7 +81,7 @@ impl App {
         let backend = CrosstermBackend::new(stdout);
         let mut terminal = Terminal::new(backend)?;
         self.ui
-            .add_notification(ui::NotificationType::Notify, "Hello, Wolrd", "Console IDE");
+            .add_notification(ui::NotificationType::Error, "Hello, Wolrd", "Console IDE");
         loop {
             terminal.draw(|f| {
                 self.render(f);
@@ -121,7 +121,6 @@ impl App {
                 Event::Tick => {}
             }
         }
-
         disable_raw_mode()?;
         execute!(
             terminal.backend_mut(),
