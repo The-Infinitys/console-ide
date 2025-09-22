@@ -20,6 +20,7 @@ pub enum NotificationType {
 
 #[derive(Debug)]
 pub struct Notification {
+    pub id: u64,
     pub notification_type: NotificationType,
     pub title: String,
     pub content: String,
@@ -31,10 +32,11 @@ pub struct Notification {
 #[derive(Debug)]
 pub struct NotifyWidget {
     pub notification: Notification,
+    pub close_button_area: Option<Rect>,
 }
 
 impl NotifyWidget {
-    pub fn new(notification_type: NotificationType, title: String, content: String) -> Self {
+    pub fn new(id: u64, notification_type: NotificationType, title: String, content: String) -> Self {
         let height = (content.lines().count() + 2) as u16; // Content lines + border
         let created_at = Instant::now();
         let min_duration = Duration::from_secs(5);
@@ -43,6 +45,7 @@ impl NotifyWidget {
 
         Self {
             notification: Notification {
+                id,
                 notification_type,
                 title,
                 content,
@@ -50,11 +53,12 @@ impl NotifyWidget {
                 created_at,
                 duration,
             },
+            close_button_area: None,
         }
     }
 
     pub fn render(
-        &self,
+        &mut self,
         f: &mut Frame,
         area: Rect,
         config: &Config,
@@ -94,6 +98,21 @@ impl NotifyWidget {
         // Render the paragraph in the inner area
         f.render_widget(paragraph, inner_area);
 
+        // Render close button
+        let close_button_text = "x";
+        let close_button_width = close_button_text.len() as u16;
+        let close_button_area = Rect::new(
+            area.x + area.width - close_button_width - 1,
+            area.y,
+            close_button_width + 1,
+            1,
+        );
+        f.render_widget(
+            Paragraph::new(close_button_text).style(Style::default().fg(border_color)),
+            close_button_area,
+        );
+        self.close_button_area = Some(close_button_area);
+
         // Calculate the progress for the gauge
         let progress = if total_duration.as_secs() > 0 {
             remaining_time.as_secs_f64() / total_duration.as_secs_f64()
@@ -124,20 +143,28 @@ impl NotifyWidget {
 #[derive(Debug)]
 pub struct NotifyManager {
     pub widgets: VecDeque<NotifyWidget>,
+    notification_id_counter: u64,
 }
 
 impl Default for NotifyManager {
     fn default() -> Self {
         Self {
             widgets: VecDeque::new(),
+            notification_id_counter: 0,
         }
     }
 }
 
 impl NotifyManager {
     pub fn add(&mut self, notification_type: NotificationType, title: String, content: String) {
+        let id = self.notification_id_counter;
+        self.notification_id_counter += 1;
         self.widgets
-            .push_back(NotifyWidget::new(notification_type, title, content));
+            .push_back(NotifyWidget::new(id, notification_type, title, content));
+    }
+
+    pub fn remove_notification(&mut self, id: u64) {
+        self.widgets.retain(|widget| widget.notification.id != id);
     }
 
     pub fn render(&mut self, f: &mut Frame, area: Rect, config: &Config) {
@@ -161,7 +188,7 @@ impl NotifyManager {
         let mut current_y = area.height - margin;
         let mut rendered_height = 0;
 
-        for widget in self.widgets.iter().rev() {
+        for widget in self.widgets.iter_mut().rev() {
             let notification_height = widget.notification.height;
             if rendered_height + notification_height + margin > max_height {
                 break; // Don't render if it exceeds 75% height
@@ -185,3 +212,4 @@ impl NotifyManager {
         }
     }
 }
+

@@ -90,6 +90,16 @@ impl Ui {
     pub fn handle_mouse_event(&mut self, mouse_event: MouseEvent) {
         let mouse_pos = (mouse_event.column, mouse_event.row);
 
+        // Check for notification close button clicks
+        for widget in self.notification_manager.widgets.iter() {
+            if let Some(close_area) = widget.close_button_area {
+                if close_area.contains(ratatui::prelude::Position::new(mouse_pos.0, mouse_pos.1)) {
+                    self.notification_manager.remove_notification(widget.notification.id);
+                    return;
+                }
+            }
+        }
+
         if self
             .top_bar_area
             .contains(ratatui::prelude::Position::new(mouse_pos.0, mouse_pos.1))
