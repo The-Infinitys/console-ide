@@ -291,6 +291,7 @@ name = "console-ide"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "console-ide-feature",
  "crossterm 0.29.0",
  "instance-pipe",
  "ipak",
@@ -299,6 +300,13 @@ dependencies = [
  "serde_yaml",
  "thiserror 2.0.16",
  "tui-term",
+]
+
+[[package]]
+name = "console-ide-feature"
+version = "0.1.0"
+dependencies = [
+ "ipak",
 ]
 
 [[package]]
