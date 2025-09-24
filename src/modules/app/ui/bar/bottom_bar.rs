@@ -1,7 +1,11 @@
 use crossterm::event::MouseEvent;
+
+use crate::app::ui::widget::BarWidget;
 #[derive(Debug, Default)]
 
-pub struct BottomBar {}
+pub struct BottomBar {
+    pub widgets: Vec<BarWidget>,
+}
 
 impl BottomBar {
     pub fn render(

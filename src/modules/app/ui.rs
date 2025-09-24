@@ -27,6 +27,7 @@ mod bar;
 mod notification;
 mod pallete;
 mod panel;
+mod widget;
 #[derive(Debug, Default)]
 pub struct Ui {
     panel: panel::PanelUi,

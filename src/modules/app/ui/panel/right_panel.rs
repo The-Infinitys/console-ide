@@ -1,7 +1,11 @@
 use crossterm::event::{KeyEvent, MouseEvent};
+
+use crate::app::ui::widget::PanelWidget;
 #[derive(Debug, Default)]
 pub struct RightPanel {
     pub is_closed: bool,
+
+    pub widgets: Vec<PanelWidget>,
 }
 
 impl RightPanel {
