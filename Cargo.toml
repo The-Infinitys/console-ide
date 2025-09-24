@@ -12,3 +12,4 @@ ratatui = { version = "0.29.0", features = ["all-widgets"] }
 serde = { version = "1.0.225", features = ["derive"] }
 serde_yaml = "0.9.34"
 thiserror = "2.0.16"
+tui-term = "0.2.0"
