@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 ipak = { git = "https://github.com/The-Infinitys/ipak" }
+instance-pipe = { git = "https://github.com/The-Infinitys/rust.instance-pipe" }

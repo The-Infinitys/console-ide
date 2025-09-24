@@ -6,7 +6,7 @@ edition = "2024"
 [dependencies]
 clap = { version = "4.5.47", features = ["derive"] }
 crossterm = "0.29.0"
-instance-pipe = { git = "https://github.com/The-Infinitys/rust.instance-pipe", version = "0.1.0" }
+instance-pipe = { git = "https://github.com/The-Infinitys/rust.instance-pipe" }
 ipak = { git = "https://github.com/The-Infinitys/ipak" }
 ratatui = { version = "0.29.0", features = ["all-widgets"] }
 serde = { version = "1.0.225", features = ["derive"] }
