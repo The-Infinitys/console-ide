@@ -146,19 +146,12 @@ impl NotifyWidget {
 }
 
 #[derive(Debug)]
+#[derive(Default)]
 pub struct NotifyManager {
     pub widgets: VecDeque<NotifyWidget>,
     notification_id_counter: u64,
 }
 
-impl Default for NotifyManager {
-    fn default() -> Self {
-        Self {
-            widgets: VecDeque::new(),
-            notification_id_counter: 0,
-        }
-    }
-}
 
 impl NotifyManager {
     pub fn add(&mut self, notification_type: NotificationType, title: String, content: String) {
@@ -210,7 +203,7 @@ impl NotifyManager {
                 notification_width,
                 notification_height,
             );
-            f.render_widget(Clear, notification_area.into());
+            f.render_widget(Clear, notification_area);
 
             widget.render(f, notification_area, config, remaining_time, total_duration);
             rendered_height += notification_height + margin;
