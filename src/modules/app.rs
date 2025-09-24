@@ -12,6 +12,8 @@ use features::FeatureManager;
 use ratatui::{Frame, Terminal, backend::CrosstermBackend};
 use std::{io, path::PathBuf, time::Duration};
 
+use crate::modules::extension_manager::{ExtensionManager, ExtensionMessage};
+
 pub mod config;
 pub mod event;
 pub mod features;
@@ -23,6 +25,7 @@ pub struct App {
     event_handler: EventHandler,
     #[allow(unused)]
     feature_manager: FeatureManager,
+    extension_manager: ExtensionManager,
     ui: ui::Ui,
 }
 
@@ -33,6 +36,7 @@ impl Default for App {
             config: Config::default(),
             event_handler: EventHandler::new(Duration::from_millis(100)),
             feature_manager: FeatureManager::default(),
+            extension_manager: ExtensionManager::default(),
             ui: ui::Ui::default(),
         }
     }
@@ -49,12 +53,36 @@ impl App {
         });
 
         let feature_manager = FeatureManager::new();
+        let mut extension_manager = ExtensionManager::new();
+
+        match extension_manager.load_and_resolve_extensions() {
+            Ok(_) => {
+                for (ext_id, _) in extension_manager.resolved_extensions.clone() {
+                    if let Err(e) = extension_manager.activate_extension(&ext_id) {
+                        eprintln!("Failed to activate extension {}: {}", ext_id, e);
+                        // Add a notification to the UI
+                        // self.ui.add_notification(ui::NotificationType::Error, &format!("Extension Activation Failed: {}", ext_id), &e.to_string());
+                    } else {
+                        println!("Activated extension: {}", ext_id);
+                        // self.ui.add_notification(ui::NotificationType::Info, &format!("Extension Activated: {}", ext_id), "");
+                    }
+                }
+            }
+            Err(errors) => {
+                for error in errors {
+                    eprintln!("Extension Resolution Error: {}", error);
+                    // Add a notification to the UI
+                    // self.ui.add_notification(ui::NotificationType::Error, "Extension Resolution Error", &error.to_string());
+                }
+            }
+        }
 
         Self {
             workspace_dir: None,
             config,
             event_handler: EventHandler::new(Duration::from_millis(250)),
             feature_manager,
+            extension_manager,
             ui: ui::Ui::default(),
         }
     }
@@ -118,7 +146,20 @@ impl App {
                     }
                     _ => {}
                 },
-                Event::Tick => {}
+                Event::Tick => {
+                    // Process messages from active extensions
+                    for (ext_id, _) in self.extension_manager.resolved_extensions.clone() {
+                        if let Ok(Some(message)) = self.extension_manager.receive_message(&ext_id) {
+                            match message {
+                                ExtensionMessage::WidgetSpawned { widget_id } => {
+                                    println!("Extension {} spawned widget: {}", ext_id, widget_id);
+                                    // Here, you would add logic to actually spawn the widget in the UI
+                                    // self.ui.add_widget(widget_id);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
         disable_raw_mode()?;
