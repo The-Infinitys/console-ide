@@ -1,13 +1,14 @@
+use console_ide_feature::extension::Extension;
+use console_ide_feature::resolver::{ExtensionId, ResolutionError, Resolver};
+use instance_pipe::{Client as Pipe, Event as PipeEvent};
+use serde::{Deserialize, Serialize};
+use std::process::Child;
 use std::{
     collections::HashMap,
     fs,
     path::PathBuf,
-    process::{Command, Stdio}
+    process::{Command, Stdio},
 };
-use console_ide_feature::extension::Extension;
-use console_ide_feature::resolver::{ExtensionId, Resolver, ResolutionError};
-use instance_pipe::{Client as Pipe, Event as PipeEvent};
-use serde::{Deserialize, Serialize};
 
 // Define a message protocol for host-extension communication
 #[derive(Debug, Serialize, Deserialize)]
@@ -26,6 +27,7 @@ pub enum ExtensionMessage {
 pub struct ExtensionManager {
     pub resolved_extensions: HashMap<ExtensionId, Extension>,
     active_pipes: HashMap<ExtensionId, Pipe>,
+    process: Option<Child>,
 }
 
 impl ExtensionManager {
@@ -33,6 +35,7 @@ impl ExtensionManager {
         ExtensionManager {
             resolved_extensions: HashMap::new(),
             active_pipes: HashMap::new(),
+            process: None,
         }
     }
 
@@ -45,8 +48,11 @@ impl ExtensionManager {
         let mut available_extensions = HashMap::new();
         let mut resolver = Resolver::new();
 
-        for entry in fs::read_dir(&extensions_dir).map_err(|e| vec![ResolutionError::NotFound(ExtensionId::from(e.to_string()))])? {
-            let entry = entry.map_err(|e| vec![ResolutionError::NotFound(ExtensionId::from(e.to_string()))])?;
+        for entry in fs::read_dir(&extensions_dir)
+            .map_err(|e| vec![ResolutionError::NotFound(ExtensionId::from(e.to_string()))])?
+        {
+            let entry = entry
+                .map_err(|e| vec![ResolutionError::NotFound(ExtensionId::from(e.to_string()))])?;
             let path = entry.path();
 
             if path.is_file() {
@@ -67,7 +73,10 @@ impl ExtensionManager {
         let root_extension_ids: Vec<ExtensionId> = available_extensions.keys().cloned().collect();
         match resolver.resolve(&root_extension_ids) {
             Ok(resolved) => {
-                self.resolved_extensions = resolved.into_iter().map(|(id, res_ext)| (id, res_ext.extension)).collect();
+                self.resolved_extensions = resolved
+                    .into_iter()
+                    .map(|(id, res_ext)| (id, res_ext.extension))
+                    .collect();
                 Ok(())
             }
             Err(errors) => Err(errors),
@@ -91,8 +100,13 @@ impl ExtensionManager {
         }
     }
 
-    pub fn activate_extension(&mut self, extension_id: &ExtensionId) -> Result<(), Box<dyn std::error::Error>> {
-        let extension = self.resolved_extensions.get(extension_id)
+    pub fn activate_extension(
+        &mut self,
+        extension_id: &ExtensionId,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let extension = self
+            .resolved_extensions
+            .get(extension_id)
             .ok_or_else(|| format!("Extension {} not found or not resolved.", extension_id))?;
 
         let extension_path = get_extensions_dir().join(&extension.id); // Assuming binary name is extension ID
@@ -101,7 +115,7 @@ impl ExtensionManager {
         }
 
         let pipe_name = format!("console-ide-pipe-{}", extension_id);
-        let mut child = Command::new(&extension_path)
+        let child = Command::new(&extension_path)
             .arg("exec")
             .arg("background-process")
             .env("INSTANCE_PIPE_NAME", &pipe_name) // Pass pipe name via environment variable
@@ -109,14 +123,18 @@ impl ExtensionManager {
 
         let pipe = Pipe::start(&pipe_name)?; // Host creates the pipe
         self.active_pipes.insert(extension_id.clone(), pipe);
-
+        self.process = Some(child);
         // Example: Send a message to the extension
         // self.send_message(extension_id, HostMessage::SpawnWidget { widget_type: "terminal".to_string(), data: "".to_string() })?;
 
         Ok(())
     }
 
-    pub fn send_message(&mut self, extension_id: &ExtensionId, message: HostMessage) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn send_message(
+        &mut self,
+        extension_id: &ExtensionId,
+        message: HostMessage,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         if let Some(pipe) = self.active_pipes.get_mut(extension_id) {
             let serialized_message = serde_json::to_string(&message)?;
             pipe.send(&serialized_message)?; // Send serialized message
@@ -126,14 +144,15 @@ impl ExtensionManager {
         }
     }
 
-    pub fn receive_message(&mut self, extension_id: &ExtensionId) -> Result<Option<ExtensionMessage>, Box<dyn std::error::Error>> {
+    pub fn receive_message(
+        &mut self,
+        extension_id: &ExtensionId,
+    ) -> Result<Option<ExtensionMessage>, Box<dyn std::error::Error>> {
         if let Some(pipe) = self.active_pipes.get_mut(extension_id) {
             match pipe.poll_event() {
-                Ok(Some(PipeEvent::MessageReceived(message))) => {
-                    Ok(Some(message))
-                },
+                Ok(Some(PipeEvent::MessageReceived(message))) => Ok(Some(message)),
                 Ok(Some(_)) => Ok(None), // Ignore other events for now
-                Ok(None) => Ok(None), // No message received within timeout
+                Ok(None) => Ok(None),    // No message received within timeout
                 Err(e) => Err(e.into()),
             }
         } else {

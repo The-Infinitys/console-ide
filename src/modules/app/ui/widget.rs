@@ -1,4 +1,5 @@
 #[derive(Debug)]
+#[allow(unused)]
 pub enum WidgetItem {
     BarWidget(BarWidget),
     PanelWidget(PanelWidget),
@@ -7,6 +8,4 @@ pub enum WidgetItem {
 
 pub struct BarWidget {}
 #[derive(Debug)]
-pub struct PanelWidget {
-    
-}
+pub struct PanelWidget {}

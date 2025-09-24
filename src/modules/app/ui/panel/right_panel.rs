@@ -5,7 +5,7 @@ use crate::app::ui::widget::PanelWidget;
 pub struct RightPanel {
     pub is_closed: bool,
 
-    pub widgets: Vec<PanelWidget>,
+    pub _widgets: Vec<PanelWidget>,
 }
 
 impl RightPanel {

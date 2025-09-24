@@ -4,7 +4,7 @@ use crate::app::ui::widget::BarWidget;
 #[derive(Debug, Default)]
 
 pub struct BottomBar {
-    pub widgets: Vec<BarWidget>,
+    pub _widgets: Vec<BarWidget>,
 }
 
 impl BottomBar {

@@ -34,7 +34,6 @@ impl Default for Keybindings {
             BindSet::new("system.focus.rightpanel", "ctrl+alt+b"),
             BindSet::new("system.focus.pallete", "ctrl+p"),
             BindSet::new("system.focus.pallete.command", "ctrl+shift+p"),
-
             BindSet::new("focus.mainpanel.new-editor", "ctrl+n"),
         ];
         Self {

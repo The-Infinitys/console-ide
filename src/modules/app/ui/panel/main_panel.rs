@@ -3,7 +3,7 @@ use crossterm::event::{KeyEvent, MouseEvent};
 use crate::app::ui::widget::PanelWidget;
 #[derive(Debug, Default)]
 pub struct MainPanel {
-    pub widgets: Vec<PanelWidget>,
+    pub _widgets: Vec<PanelWidget>,
 }
 
 impl MainPanel {

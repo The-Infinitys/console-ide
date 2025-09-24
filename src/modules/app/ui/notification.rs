@@ -36,7 +36,12 @@ pub struct NotifyWidget {
 }
 
 impl NotifyWidget {
-    pub fn new(id: u64, notification_type: NotificationType, title: String, content: String) -> Self {
+    pub fn new(
+        id: u64,
+        notification_type: NotificationType,
+        title: String,
+        content: String,
+    ) -> Self {
         let height = (content.lines().count() + 2) as u16; // Content lines + border
         let created_at = Instant::now();
         let min_duration = Duration::from_secs(5);
@@ -212,4 +217,3 @@ impl NotifyManager {
         }
     }
 }
-
