@@ -99,9 +99,9 @@ impl MainPanel {
                 let row_chunks = Layout::default()
                     .direction(Direction::Horizontal)
                     .constraints([
-                        Constraint::Min(0), // Left padding
+                        Constraint::Min(0),               // Left padding
                         Constraint::Length(max_name_len), // Use max_name_len for alignment
-                        Constraint::Length(2), // ": "
+                        Constraint::Length(2),            // ": "
                         Constraint::Length(key.len() as u16),
                         Constraint::Min(0), // Right padding
                     ])

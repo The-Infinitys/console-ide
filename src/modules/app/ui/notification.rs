@@ -145,13 +145,11 @@ impl NotifyWidget {
     }
 }
 
-#[derive(Debug)]
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct NotifyManager {
     pub widgets: VecDeque<NotifyWidget>,
     notification_id_counter: u64,
 }
-
 
 impl NotifyManager {
     pub fn add(&mut self, notification_type: NotificationType, title: String, content: String) {
