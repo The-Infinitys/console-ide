@@ -1,6 +1,6 @@
 use crossterm::event::{KeyEvent, MouseEvent};
 
-use crate::app::ui::widget::PanelWidget;
+use crate::{app::ui::widget::PanelWidget, assets};
 #[derive(Debug, Default)]
 pub struct LeftPanel {
     pub is_closed: bool,
@@ -14,9 +14,37 @@ impl LeftPanel {
         area: ratatui::layout::Rect,
         _config: &crate::app::Config,
     ) {
-        use ratatui::widgets::Paragraph;
-        let widget = Paragraph::new("Left Panel");
-        f.render_widget(widget, area);
+        use ratatui::{
+            prelude::*,
+            widgets::{Block, Borders, Paragraph},
+        };
+
+        let logo = assets::logo::files();
+        let logo_height = logo.lines().count() as u16;
+        let logo_width = logo.lines().map(|s| s.len()).max().unwrap_or(0) as u16;
+
+        let centered_vertical_chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Min(0),
+                Constraint::Length(logo_height),
+                Constraint::Min(0),
+            ])
+            .split(area);
+
+        let centered_horizontal_chunks = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([
+                Constraint::Min(0),
+                Constraint::Length(logo_width),
+                Constraint::Min(0),
+            ])
+            .split(centered_vertical_chunks[1]);
+
+        let logo_paragraph = Paragraph::new(logo)
+            .alignment(Alignment::Center)
+            .block(Block::default().borders(Borders::NONE));
+        f.render_widget(logo_paragraph, centered_horizontal_chunks[1]);
     }
 
     pub fn handle_mouse_event(&mut self, _mouse_event: MouseEvent) {
